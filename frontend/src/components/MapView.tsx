@@ -18,31 +18,31 @@ export const getBasemapUrl = (subpath: string): string => {
 
 export const BASEMAP_OPTIONS = [
   {
+    id: 'satellite',
+    label: 'ESRI Space Recon Satellite (High-Res)',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri, Maxar, Earthstar Geographics, Copernicus Sentinel-2',
+    subdomains: 'abcd',
+  },
+  {
+    id: 'tactical_dark',
+    label: 'Tactical Dark Canvas (Night Recon)',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri, HERE, Garmin, OpenStreetMap',
+    subdomains: 'abcd',
+  },
+  {
+    id: 'osm_topo',
+    label: 'OpenStreetMap Operational Topo',
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; OpenStreetMap contributors',
+    subdomains: 'abc',
+  },
+  {
     id: 'carto_dark',
-    label: 'CARTO Dark Matter (Night Ops)',
+    label: 'CARTO Dark Matter (Custom Key)',
     url: getBasemapUrl('dark_all'),
     attribution: '&copy; CARTO &copy; OpenStreetMap',
-    subdomains: 'abcd',
-  },
-  {
-    id: 'carto_voyager',
-    label: 'CARTO Voyager (Tactical Day)',
-    url: getBasemapUrl('voyager'),
-    attribution: '&copy; CARTO &copy; OpenStreetMap',
-    subdomains: 'abcd',
-  },
-  {
-    id: 'carto_positron',
-    label: 'CARTO Positron (High-Contrast)',
-    url: getBasemapUrl('light_all'),
-    attribution: '&copy; CARTO &copy; OpenStreetMap',
-    subdomains: 'abcd',
-  },
-  {
-    id: 'satellite',
-    label: 'Sentinel / ESRI Satellite Hybrid',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: '&copy; Esri &copy; Copernicus Sentinel',
     subdomains: 'abcd',
   },
 ];
@@ -84,9 +84,10 @@ export const MapView: React.FC<MapViewProps> = ({
   const mapRef = useRef<L.Map | null>(null);
   const layersGroupRef = useRef<L.LayerGroup | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
-  const [selectedBasemap, setSelectedBasemap] = useState<string>('carto_dark');
+  const [selectedBasemap, setSelectedBasemap] = useState<string>('satellite');
   const [selectedInfo, setSelectedInfo] = useState<any>(null);
   const [showBasemapMenu, setShowBasemapMenu] = useState<boolean>(false);
+  const [isLegendOpen, setIsLegendOpen] = useState<boolean>(true);
 
   // Initialize Map Once
   useEffect(() => {
@@ -338,7 +339,7 @@ export const MapView: React.FC<MapViewProps> = ({
           {showBasemapMenu && (
             <div className="absolute top-9 left-0 bg-slate-900/95 backdrop-blur-md border border-cyan-500/30 rounded-lg shadow-2xl p-1.5 w-64 space-y-1 text-xs">
               <div className="px-2 py-1 text-[10px] text-slate-400 font-mono uppercase border-b border-slate-800">
-                CARTO Base Maps (Tactical Ops)
+                Geospatial Imagery &amp; Tactical Basemaps
               </div>
               {BASEMAP_OPTIONS.map(opt => (
                 <button
@@ -363,34 +364,49 @@ export const MapView: React.FC<MapViewProps> = ({
       </div>
 
       {/* Top-Right: Floating Evidence Legend */}
-      <div className="absolute top-4 right-4 z-[1000] bg-slate-900/90 backdrop-blur-md border border-cyan-500/30 p-3 rounded-lg text-xs space-y-1.5 shadow-xl">
-        <div className="font-semibold text-cyan-400 mb-1 flex items-center gap-1.5">
-          <Layers className="w-3.5 h-3.5" /> Map Evidence Layers
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded bg-sky-500/60 border border-cyan-300 inline-block" />
-          <span className="text-slate-300">Flooded Extent (SAR AI)</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-3 h-0.5 bg-red-500 inline-block border-t-2 border-dashed border-red-500" />
-          <span className="text-slate-300">Disrupted Road Corridor</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-3 h-0.5 bg-emerald-500 inline-block" />
-          <span className="text-slate-300">Passable Lifeline Route</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" />
-          <span className="text-slate-300">Cut-off Settlement</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
-          <span className="text-slate-300">Connected Settlement</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="w-3 h-0.5 bg-pink-500 inline-block" />
-          <span className="text-slate-300">Terrain Downstream Path</span>
-        </div>
+      <div className="absolute top-4 right-4 z-[1000] bg-slate-900/90 backdrop-blur-md border border-cyan-500/30 rounded-lg text-xs shadow-xl transition-all">
+        <button
+          onClick={() => setIsLegendOpen(!isLegendOpen)}
+          className="flex items-center justify-between gap-2 px-3 py-2 font-semibold text-cyan-400 w-full hover:text-cyan-300 transition-colors"
+          title="Toggle Legend"
+        >
+          <span className="flex items-center gap-1.5">
+            <Layers className="w-3.5 h-3.5" />
+            <span>Map Legend</span>
+          </span>
+          <span className="text-[10px] text-slate-400 font-mono">
+            {isLegendOpen ? '▲' : '▼'}
+          </span>
+        </button>
+
+        {isLegendOpen && (
+          <div className="px-3 pb-3 pt-1 space-y-1.5 border-t border-slate-800 animate-fade-in">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded bg-sky-500/60 border border-cyan-300 inline-block shrink-0" />
+              <span className="text-slate-300">Flooded Extent (SAR AI)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-0.5 bg-red-500 inline-block border-t-2 border-dashed border-red-500 shrink-0" />
+              <span className="text-slate-300">Disrupted Road Corridor</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-0.5 bg-emerald-500 inline-block shrink-0" />
+              <span className="text-slate-300">Passable Lifeline Route</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block shrink-0" />
+              <span className="text-slate-300">Cut-off Settlement</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shrink-0" />
+              <span className="text-slate-300">Connected Settlement</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-0.5 bg-pink-500 inline-block shrink-0" />
+              <span className="text-slate-300">Terrain Downstream Path</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Click-to-Explain Detail Box */}

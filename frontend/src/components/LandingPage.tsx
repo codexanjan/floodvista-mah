@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import {
   Activity,
   Layers,
@@ -16,7 +17,8 @@ import {
   Play,
   Terminal,
   Database,
-  Cpu
+  Cpu,
+  Globe
 } from 'lucide-react';
 import { Logo } from './Logo';
 
@@ -42,11 +44,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <span className="font-extrabold text-lg tracking-wider bg-gradient-to-r from-cyan-300 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
                 FLOODVISTA AI
               </span>
-              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/30">
-                Track B
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                OPERATIONAL
               </span>
             </div>
-            <p className="text-[10px] text-slate-400">See. Understand. Rescue Faster.</p>
+            <p className="text-[10px] text-slate-400">Autonomous Satellite Radar &amp; Disaster Resilience Intelligence</p>
           </div>
         </div>
 
@@ -78,22 +81,37 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
       {/* Hero Section */}
       <section className="relative px-6 pt-16 pb-20 max-w-6xl mx-auto w-full text-center space-y-6">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-xs text-cyan-300 font-mono shadow-cyan-glow">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/40 text-xs text-cyan-300 font-mono shadow-cyan-glow"
+        >
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-          MULTIMODAL AI HACKATHON 2026 &bull; TRACK B: FLOOD DAMAGE FROM SPACE
-        </div>
+          AUTONOMOUS SATELLITE RADAR &amp; DISASTER RESILIENCE ENGINE
+        </motion.div>
 
-        <h1 className="text-4xl md:text-6xl font-black tracking-tight max-w-4xl mx-auto leading-tight">
+        <motion.h1
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="text-4xl md:text-6xl font-black tracking-tight max-w-4xl mx-auto leading-tight"
+        >
           Satellite-Powered Flood Assessment,{' '}
           <span className="bg-gradient-to-r from-cyan-300 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
             Lifeline Routing & Resilience AI
           </span>
-        </h1>
+        </motion.h1>
 
-        <p className="text-sm md:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
+        <motion.p
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-sm md:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed"
+        >
           Operational geospatial decision support during catastrophic mountain flash floods.
           Transforming Sentinel-1 SAR, Copernicus DEM, and OpenStreetMap vectors into definitive, life-saving answers.
-        </p>
+        </motion.p>
 
         {/* CTA Buttons */}
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
@@ -213,9 +231,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-10 h-10 rounded-xl bg-rose-950/80 border border-rose-500/30 flex items-center justify-center text-rose-300">
                 <FileText className="w-5 h-5" />
               </div>
-              <h3 className="text-sm font-bold text-white">05. Offline Rescue Pack & Bilingual SitReps</h3>
+              <h3 className="text-sm font-bold text-white">05. Offline Rescue Pack &amp; 7-Lang SitReps</h3>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Generates deterministic incident briefs in English and Nepali (नेपाली). Standalone 1-click ZIP pack downloads GeoJSONs and an offline HTML map viewer that runs in zero-connectivity disaster zones.
+                Generates deterministic incident briefs across 7 languages (English, Hindi, Nepali, Bengali, Tamil, Telugu, and Marathi). Standalone 1-click ZIP pack downloads GeoJSONs and an offline satellite map viewer that runs in zero-connectivity disaster zones.
               </p>
               <div className="text-[11px] text-rose-400 font-mono">Judging Advantage: Built for zero-connectivity field operations</div>
             </div>
@@ -246,7 +264,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="glow-card p-3 rounded-2xl bg-slate-950 border border-cyan-500/30 space-y-2">
             <div className="text-xs font-bold text-cyan-300 flex items-center justify-between">
               <span>Command Center Live Triage Map</span>
-              <span className="text-[10px] text-slate-400 font-mono">CARTO Basemaps &bull; Leaflet</span>
+              <span className="text-[10px] text-slate-400 font-mono">ESRI Space Recon &bull; Leaflet</span>
             </div>
             <img
               src="/floodvista_command_center.jpg"
@@ -274,8 +292,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="flex items-center gap-3">
           <Logo size={28} />
           <div>
-            <span className="font-bold text-slate-300">FLOODVISTA AI</span> &bull; Multimodal AI Hackathon 2026
-            <p className="text-[11px] text-slate-500">Track B: Mapping Flood Damage from Space</p>
+            <span className="font-bold text-slate-300">FLOODVISTA AI</span> &bull; Autonomous Geospatial Intelligence
+            <p className="text-[11px] text-slate-500">Autonomous Satellite Radar &amp; Disaster Resilience Intelligence</p>
           </div>
         </div>
 

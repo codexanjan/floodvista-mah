@@ -124,4 +124,14 @@ export interface BilingualReport {
   nepali_markdown: string;
   english_html: string;
   nepali_html: string;
+  hindi_markdown?: string;
+  hindi_html?: string;
+  bengali_markdown?: string;
+  bengali_html?: string;
+  tamil_markdown?: string;
+  tamil_html?: string;
+  telugu_markdown?: string;
+  telugu_html?: string;
+  marathi_markdown?: string;
+  marathi_html?: string;
 }

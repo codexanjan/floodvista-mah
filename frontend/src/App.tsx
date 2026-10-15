@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
 import {
   Activity,
   Layers,
@@ -29,7 +31,10 @@ import {
   LogOut,
   Home,
   BookOpen,
-  Sparkles
+  Sparkles,
+  Menu,
+  X,
+  Globe
 } from 'lucide-react';
 import JSZip from 'jszip';
 import { MapView } from './components/MapView';
@@ -75,7 +80,8 @@ export function App() {
   const [evaluation, setEvaluation] = useState<ModelEvaluation | null>(DEFAULT_EVALUATION);
   const [hydrology, setHydrology] = useState<HydrologyResult | null>(DEFAULT_HYDROLOGY);
   const [report, setReport] = useState<BilingualReport | null>(DEFAULT_REPORT);
-  const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'ne'>('en');
+  const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'ne' | 'hi' | 'bn' | 'ta' | 'te' | 'mr'>('en');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
   const [isZipping, setIsZipping] = useState<boolean>(false);
 
@@ -143,9 +149,23 @@ export function App() {
       .catch(() => {});
   };
 
+  const getActiveReportMarkdown = (): string => {
+    if (!report) return DEFAULT_REPORT.english_markdown;
+    switch (selectedLanguage) {
+      case 'hi': return report.hindi_markdown || DEFAULT_REPORT.hindi_markdown || report.english_markdown;
+      case 'ne': return report.nepali_markdown || DEFAULT_REPORT.nepali_markdown;
+      case 'bn': return report.bengali_markdown || DEFAULT_REPORT.bengali_markdown || report.english_markdown;
+      case 'ta': return report.tamil_markdown || DEFAULT_REPORT.tamil_markdown || report.english_markdown;
+      case 'te': return report.telugu_markdown || DEFAULT_REPORT.telugu_markdown || report.english_markdown;
+      case 'mr': return report.marathi_markdown || DEFAULT_REPORT.marathi_markdown || report.english_markdown;
+      case 'en':
+      default:
+        return report.english_markdown;
+    }
+  };
+
   const copyReportMarkdown = () => {
-    if (!report) return;
-    const text = selectedLanguage === 'en' ? report.english_markdown : report.nepali_markdown;
+    const text = getActiveReportMarkdown();
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -158,9 +178,14 @@ export function App() {
       const zip = new JSZip();
       const folder = zip.folder("floodvista_trishuli_rescue_pack");
 
-      // 1. Situation Reports
+      // 1. Situation Reports across all 7 Indian & regional languages
       folder?.file("situation_report_en.md", report?.english_markdown || DEFAULT_REPORT.english_markdown);
+      folder?.file("situation_report_hi.md", report?.hindi_markdown || DEFAULT_REPORT.hindi_markdown || '');
       folder?.file("situation_report_ne.md", report?.nepali_markdown || DEFAULT_REPORT.nepali_markdown);
+      folder?.file("situation_report_bn.md", report?.bengali_markdown || DEFAULT_REPORT.bengali_markdown || '');
+      folder?.file("situation_report_ta.md", report?.tamil_markdown || DEFAULT_REPORT.tamil_markdown || '');
+      folder?.file("situation_report_te.md", report?.telugu_markdown || DEFAULT_REPORT.telugu_markdown || '');
+      folder?.file("situation_report_mr.md", report?.marathi_markdown || DEFAULT_REPORT.marathi_markdown || '');
 
       // 2. Vector GeoJSON layers
       folder?.file("inundation_footprint.geojson", JSON.stringify(layersData?.buildings || DEFAULT_LAYERS.buildings, null, 2));
@@ -173,13 +198,14 @@ export function App() {
         generated_at_utc: new Date().toISOString(),
         event: "Trishuli Valley Flash Flood, Nepal",
         reference_aoi_km2: 450.0,
-        carto_basemap: "CARTO Dark Matter (OpenStreetMap)",
+        basemap: "ESRI High-Res Space Recon Satellite (No Watermark)",
         sensor_evidence: ["Sentinel-1 SAR IW (VV/VH)", "Copernicus WorldDEM-30", "OpenStreetMap Snapshot"],
+        supported_languages: ["en", "hi", "ne", "bn", "ta", "te", "mr"],
         trustscore_percent: 94.2
       };
       folder?.file("manifest.json", JSON.stringify(manifest, null, 2));
 
-      // 4. Standalone Offline HTML Map
+      // 4. Standalone Offline HTML Map (Clean Satellite Imagery, No Watermark)
       const offlineHtml = `<!DOCTYPE html>
 <html>
 <head>
@@ -190,20 +216,20 @@ export function App() {
   <style>
     body { margin: 0; background: #0b1329; color: #fff; font-family: sans-serif; }
     #map { width: 100vw; height: 100vh; }
-    .header { position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(11,19,41,0.9); padding: 10px 16px; border-radius: 8px; border: 1px solid #00f2fe; }
+    .header { position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(11,19,41,0.95); padding: 10px 16px; border-radius: 8px; border: 1px solid #00f2fe; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
   </style>
 </head>
 <body>
   <div class="header">
-    <h3 style="margin:0;color:#00f2fe;">FLOODVISTA AI &bull; Offline Rescue Map</h3>
-    <p style="margin:4px 0 0 0;font-size:12px;color:#94a3b8;">Trishuli Corridor &bull; TrustScore: 94.2% &bull; Emergency Response</p>
+    <h3 style="margin:0;color:#00f2fe;">FLOODVISTA AI &bull; Offline Tactical Rescue Map</h3>
+    <p style="margin:4px 0 0 0;font-size:12px;color:#94a3b8;">Trishuli Corridor &bull; Multi-Language SitRep &bull; TrustScore: 94.2%</p>
   </div>
   <div id="map"></div>
   <script>
     const map = L.map('map').setView([28.003, 85.097], 14);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
-      attribution: 'CARTO &copy; OpenStreetMap'
+      attribution: 'Esri Satellite Recon'
     }).addTo(map);
 
     L.circleMarker([28.0032, 85.1029], { radius: 10, fillColor: '#ef4444', color: '#fff', weight: 2, fillOpacity: 0.9 })
@@ -228,6 +254,14 @@ export function App() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+
+      // Visual Delight: Confetti Celebration
+      confetti({
+        particleCount: 90,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#00f2fe', '#38bdf8', '#10b981', '#34d399', '#ffffff']
+      });
     } catch (err) {
       console.error("Rescue pack generation failed", err);
     } finally {
@@ -271,11 +305,12 @@ export function App() {
                 <span className="font-extrabold text-base tracking-wider bg-gradient-to-r from-cyan-300 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
                   FLOODVISTA AI
                 </span>
-                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/30">
-                  Track B
+                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  OPERATIONAL
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400">Trishuli Valley Disaster Intelligence &bull; Nepal 2026</p>
+              <p className="text-[10px] text-slate-400 hidden sm:block">Autonomous Satellite Radar &amp; Disaster Resilience Intelligence</p>
             </div>
           </button>
         </div>
@@ -307,20 +342,20 @@ export function App() {
         </div>
 
         {/* User Profile / Status Indicator Pill */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-slate-300">Live Telemetry</span>
+            <span className="text-slate-300">Live Satellite Telemetry</span>
             <span className="text-slate-600">|</span>
-            <span className="text-cyan-400 font-mono">Sentinel-1 SAR</span>
+            <span className="text-cyan-400 font-mono">Sentinel-1/2 Ready</span>
           </div>
 
           {userSession ? (
-            <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-900 border border-cyan-500/30 text-xs">
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-900 border border-cyan-500/30 text-xs">
               <div className="w-6 h-6 rounded-full bg-gradient-to-r from-cyan-500 to-teal-500 flex items-center justify-center text-slate-950 font-bold text-[10px]">
                 {userSession.name.charAt(0)}
               </div>
-              <div className="hidden sm:block text-left">
+              <div className="text-left">
                 <div className="font-bold text-white text-[11px] leading-none">{userSession.name.split(' (')[0]}</div>
                 <div className="text-[9px] text-cyan-400 font-mono leading-none mt-0.5">{userSession.role} Clearance</div>
               </div>
@@ -347,21 +382,102 @@ export function App() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-950 font-bold text-xs shadow-cyan-glow transition-all disabled:opacity-50"
           >
             <Download className="w-3.5 h-3.5" />
-            {isZipping ? 'Zipping...' : 'Rescue Pack (.zip)'}
+            <span className="hidden xs:inline">{isZipping ? 'Zipping...' : 'Rescue Pack'}</span>
+          </button>
+
+          {/* Mobile Menu Hamburger Button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:text-cyan-400"
+            aria-label="Toggle Navigation Menu"
+          >
+            {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
         </div>
       </header>
 
+      {/* Mobile Drawer Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden border-b border-cyan-500/20 bg-[#070b14]/95 backdrop-blur-xl px-4 py-3 space-y-3"
+          >
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() => { setCurrentPage('landing'); setIsMobileMenuOpen(false); }}
+                className="flex items-center justify-center gap-1.5 p-2 rounded-lg text-xs font-semibold bg-slate-900 text-slate-400 hover:text-white"
+              >
+                <Home className="w-3.5 h-3.5" /> Home
+              </button>
+              <button
+                onClick={() => { setCurrentPage('console'); setIsMobileMenuOpen(false); }}
+                className={`flex items-center justify-center gap-1.5 p-2 rounded-lg text-xs font-semibold ${
+                  currentPage === 'console' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'bg-slate-900 text-slate-400'
+                }`}
+              >
+                <Activity className="w-3.5 h-3.5" /> Console
+              </button>
+              <button
+                onClick={() => { setCurrentPage('docs'); setIsMobileMenuOpen(false); }}
+                className={`flex items-center justify-center gap-1.5 p-2 rounded-lg text-xs font-semibold ${
+                  currentPage === 'docs' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'bg-slate-900 text-slate-400'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" /> API Docs
+              </button>
+            </div>
+
+            {/* Quick Mobile Tab Links */}
+            {currentPage === 'console' && (
+              <div className="pt-2 border-t border-slate-800 space-y-1">
+                <div className="text-[10px] uppercase font-mono text-slate-400 px-1">Mission Modules</div>
+                <div className="grid grid-cols-2 gap-1.5 text-xs">
+                  {[
+                    { id: 'command', label: 'Command Center', icon: Activity },
+                    { id: 'twin', label: '01. Evidence Twin', icon: Layers },
+                    { id: 'resilience', label: '02. Resilience Lab', icon: Route },
+                    { id: 'trustscore', label: '03. TrustScore Engine', icon: ShieldCheck },
+                    { id: 'simulator', label: '04. What-If Simulator', icon: Sliders },
+                    { id: 'reports', label: '05. 7-Lang SitRep', icon: FileText },
+                    { id: 'hydrology', label: 'Hydrology Corridor', icon: Waves },
+                    { id: 'evaluation', label: 'Kuro Siwo Metrics', icon: Binary },
+                  ].map(tab => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => { setActiveTab(tab.id as any); setIsMobileMenuOpen(false); }}
+                        className={`flex items-center gap-2 p-2 rounded-lg text-left transition-colors ${
+                          isActive ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold' : 'bg-slate-900/60 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <span className="truncate">{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Main Mission Tabs Navigation Bar (When on Console) */}
       {currentPage === 'console' && (
-        <nav className="bg-slate-950/90 border-b border-cyan-500/10 px-4 overflow-x-auto flex items-center gap-1">
+        <nav className="bg-slate-950/90 border-b border-cyan-500/10 px-4 overflow-x-auto flex items-center gap-1 scrollbar-none">
           {[
-            { id: 'command', label: 'Command Center', icon: Activity, badge: null },
+            { id: 'command', label: 'Command Center', icon: Activity, badge: 'Live Map' },
             { id: 'twin', label: '01. Flood Evidence Twin', icon: Layers, badge: 'Explainable AI' },
             { id: 'resilience', label: '02. Rescue Route Resilience Lab', icon: Route, badge: 'Dijkstra' },
-            { id: 'trustscore', label: '03. TrustScore Engine', icon: ShieldCheck, badge: 'Responsible AI' },
+            { id: 'trustscore', label: '03. TrustScore Engine', icon: ShieldCheck, badge: 'Uncertainty' },
             { id: 'simulator', label: '04. What-If Simulator', icon: Sliders, badge: 'Live Controls' },
-            { id: 'reports', label: '05. Offline Rescue Pack & SitRep', icon: FileText, badge: 'Bilingual' },
+            { id: 'reports', label: '05. Multilingual SitRep & Offline Pack', icon: FileText, badge: '7 Languages' },
             { id: 'hydrology', label: 'Downstream Flow Path Explorer', icon: Waves, badge: 'D8 Topo' },
             { id: 'evaluation', label: 'Scientific Provenance & Metrics', icon: Binary, badge: 'Kuro Siwo' },
           ].map(tab => {
@@ -423,7 +539,7 @@ export function App() {
 
                 {/* Map & Live Feed Layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  <div className="lg:col-span-2 h-[580px]">
+                  <div className="lg:col-span-2 h-[420px] sm:h-[500px] lg:h-[580px]">
                     <MapView
                       geojsonLayers={layersData}
                       hydrologyCorridor={hydrology?.flow_corridor_geojson}
@@ -482,7 +598,7 @@ export function App() {
                         { title: '02. Rescue Route Resilience', tab: 'resilience', desc: 'Dijkstra shortest paths & isolated villages' },
                         { title: '03. TrustScore Engine', tab: 'trustscore', desc: 'Sensor agreement & uncertainty audit' },
                         { title: '04. What-If Simulator', tab: 'simulator', desc: 'Live sliders & scenario comparison' },
-                        { title: '05. Bilingual SitRep Pack', tab: 'reports', desc: 'English & Nepali reports + ZIP download' },
+                        { title: '05. 7-Language SitRep Pack', tab: 'reports', desc: '7 Indian & regional languages + ZIP download' },
                       ].map((item, idx) => (
                         <button
                           key={idx}
@@ -546,8 +662,8 @@ export function App() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[600px]">
-                  <div className="glow-card p-4 rounded-xl flex flex-col bg-[#0b1329]/70">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-[500px] lg:h-[600px]">
+                  <div className="glow-card p-4 rounded-xl flex flex-col bg-[#0b1329]/70 h-[380px] sm:h-[460px] lg:h-full">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-bold text-cyan-300">
                         {twinViewMode === 'post' && 'Sentinel-1 SAR IW (VV/VH) & Optical Water Indices'}
@@ -569,7 +685,7 @@ export function App() {
                     </div>
                   </div>
 
-                  <div className="glow-card p-4 rounded-xl flex flex-col bg-[#0b1329]/70">
+                  <div className="glow-card p-4 rounded-xl flex flex-col bg-[#0b1329]/70 h-[380px] sm:h-[460px] lg:h-full">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-bold text-cyan-300">Click-to-Explain Spatial Inspector</span>
                       <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
@@ -682,7 +798,7 @@ export function App() {
                     })}
                   </div>
 
-                  <div className="lg:col-span-2 h-[550px]">
+                  <div className="lg:col-span-2 h-[420px] sm:h-[500px] lg:h-[550px]">
                     <MapView
                       geojsonLayers={layersData}
                       showBuildings={false}
@@ -917,39 +1033,21 @@ export function App() {
             {/* TAB: 05. SITREP & RESCUE PACK */}
             {activeTab === 'reports' && (
               <div className="space-y-4 animate-fade-in">
-                <div className="glow-card p-4 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#0b1329]/80">
+                <div className="glow-card p-4 rounded-xl flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-[#0b1329]/80">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-base font-bold text-cyan-300">05. Offline Rescue Pack + Bilingual Reports</h2>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30">
-                        Disaster Ready
+                      <h2 className="text-base font-bold text-cyan-300">05. Multilingual Situation Reports &amp; Offline Rescue Pack</h2>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        7 Languages Supported
                       </span>
                     </div>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Self-contained incident reports and offline rescue data pack generated directly from measured satellite outputs in English and Nepali.
+                      Operational incident reports generated directly from measured satellite outputs across English, Hindi, Nepali, Bengali, Tamil, Telugu, and Marathi.
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <div className="flex rounded-lg bg-slate-900 border border-slate-700 p-0.5 text-xs">
-                      <button
-                        onClick={() => setSelectedLanguage('en')}
-                        className={`px-3 py-1 rounded-md font-medium transition-colors ${
-                          selectedLanguage === 'en' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-                        }`}
-                      >
-                        English SitRep
-                      </button>
-                      <button
-                        onClick={() => setSelectedLanguage('ne')}
-                        className={`px-3 py-1 rounded-md font-medium transition-colors ${
-                          selectedLanguage === 'ne' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-                        }`}
-                      >
-                        नेपाली प्रतिवेदन
-                      </button>
-                    </div>
-
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       onClick={copyReportMarkdown}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700"
@@ -964,9 +1062,38 @@ export function App() {
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-950 font-bold text-xs shadow-cyan-glow"
                     >
                       <Download className="w-3.5 h-3.5" />
-                      {isZipping ? 'Generating...' : 'Download ZIP Pack'}
+                      {isZipping ? 'Generating...' : 'Download 7-Lang ZIP Pack'}
                     </button>
                   </div>
+                </div>
+
+                {/* 7 Indian & Regional Languages Switcher Bar */}
+                <div className="flex items-center gap-2 overflow-x-auto p-1.5 rounded-xl bg-slate-900/80 border border-slate-800 scrollbar-none">
+                  <span className="text-xs text-slate-400 font-semibold px-2 flex items-center gap-1.5 shrink-0">
+                    <Globe className="w-3.5 h-3.5 text-cyan-400" /> Select Language:
+                  </span>
+                  {[
+                    { id: 'en', label: 'English', flag: '🇬🇧' },
+                    { id: 'hi', label: 'हिन्दी (Hindi)', flag: '🇮🇳' },
+                    { id: 'ne', label: 'नेपाली (Nepali)', flag: '🇳🇵' },
+                    { id: 'bn', label: 'বাংলা (Bengali)', flag: '🇮🇳' },
+                    { id: 'ta', label: 'தமிழ் (Tamil)', flag: '🇮🇳' },
+                    { id: 'te', label: 'తెలుగు (Telugu)', flag: '🇮🇳' },
+                    { id: 'mr', label: 'मराठी (Marathi)', flag: '🇮🇳' },
+                  ].map(lang => (
+                    <button
+                      key={lang.id}
+                      onClick={() => setSelectedLanguage(lang.id as any)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                        selectedLanguage === lang.id
+                          ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-slate-950 shadow-cyan-glow font-bold scale-[1.02]'
+                          : 'bg-slate-950/60 text-slate-300 hover:text-white hover:bg-slate-800/80 border border-slate-800'
+                      }`}
+                    >
+                      <span>{lang.flag}</span>
+                      <span>{lang.label}</span>
+                    </button>
+                  ))}
                 </div>
 
                 <div className="glow-card p-6 rounded-xl space-y-4 max-w-4xl mx-auto bg-slate-950/90 text-slate-200 border border-cyan-500/30">
@@ -985,12 +1112,11 @@ export function App() {
                     </button>
                   </div>
 
-                  <div
-                    className="prose prose-invert prose-sm max-w-none space-y-3"
-                    dangerouslySetInnerHTML={{
-                      __html: selectedLanguage === 'en' ? (report?.english_html || '') : (report?.nepali_html || '')
-                    }}
-                  />
+                  <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 font-sans">
+                    <pre className="whitespace-pre-wrap font-sans text-xs text-slate-200 leading-relaxed font-medium">
+                      {getActiveReportMarkdown()}
+                    </pre>
+                  </div>
                 </div>
               </div>
             )}
@@ -1053,7 +1179,7 @@ export function App() {
                     </div>
                   </div>
 
-                  <div className="lg:col-span-2 h-[560px]">
+                  <div className="lg:col-span-2 h-[420px] sm:h-[500px] lg:h-[560px]">
                     <MapView
                       geojsonLayers={layersData}
                       hydrologyCorridor={hydrology?.flow_corridor_geojson}
@@ -1092,7 +1218,7 @@ export function App() {
                   <div className="glow-card p-4 rounded-xl bg-[#0b1329]/70">
                     <div className="text-xs text-slate-400 uppercase">Flood IoU (Class 2)</div>
                     <div className="text-2xl font-bold font-mono text-emerald-400 mt-1">{evaluation?.classes?.['Floods (Primary Target)']?.iou || 0.7640}</div>
-                    <div className="text-[10px] text-slate-500">Track B Target Benchmark</div>
+                    <div className="text-[10px] text-slate-500">Kuro Siwo Target Benchmark</div>
                   </div>
                   <div className="glow-card p-4 rounded-xl bg-[#0b1329]/70">
                     <div className="text-xs text-slate-400 uppercase">Flood Precision</div>
@@ -1176,7 +1302,7 @@ export function App() {
       <footer className="border-t border-slate-800/80 bg-[#070b14] py-3 px-4 text-center text-xs text-slate-500 flex flex-col md:flex-row items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Logo size={20} />
-          <span>FLOODVISTA AI &bull; Multimodal AI Hackathon 2026 (Track B: Mapping Flood Damage from Space)</span>
+          <span>FLOODVISTA AI &bull; Autonomous Satellite Radar &amp; Disaster Resilience Intelligence</span>
         </div>
         <div className="text-[11px] text-slate-400">
           Data: Copernicus Sentinel-1/2, Copernicus WorldDEM-30, Kuro Siwo, OpenStreetMap contributors
