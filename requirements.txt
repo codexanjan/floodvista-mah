@@ -1,0 +1,12 @@
+# FLOODVISTA AI — Production Backend Dependencies
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.7.0
+numpy>=1.26.0
+pyyaml>=6.0.1
+requests>=2.31.0
+networkx>=3.2.1
+torch>=2.2.0 --extra-index-url https://download.pytorch.org/whl/cpu
+rasterio>=1.4.0
+shapely>=2.0.4
+geopandas>=0.14.3

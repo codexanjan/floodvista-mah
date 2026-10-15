@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "floodmap"
+version = "0.1.0"
+description = "Flood damage and accessibility intelligence from permitted satellite, terrain and pre-event OSM data (Multimodal AI Hackathon 2026, Track B)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "TODO: license not yet chosen for this repository" }
+authors = [{ name = "Mohammed Junaid" }]
+
+# Runtime dependencies for the implemented acquisition, provenance, M2
+# raster-preprocessing and M5 segmentation-training stages. Dependencies for
+# later vector stages remain deliberately deferred.
+#
+# torch is lower-bounded, not pinned: the M5 baseline uses only long-stable
+# APIs (nn.Conv2d, CrossEntropyLoss(ignore_index=...), DataLoader, MPS/CUDA
+# device selection). Pinning an exact version would be a claim about
+# wheel availability on the target platforms that has not been verified.
+# Verified locally against torch 2.12.1 on macOS/arm64 (CPU and MPS).
+dependencies = [
+    "numpy>=1.26",
+    "pydantic>=2",
+    "pyyaml>=6",
+    "requests>=2.31",
+    "rasterio>=1.4",
+    "torch>=2.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "black>=24",
+    "httpx>=0.27",
+]
+
+# Additional geospatial stack — declared but not installed by the base M2
+# implementation, and not yet pinned.
+#
+# M2 uses rasterio directly. These remain listed for later vector/array stages.
+#
+# TODO(verify-before-use): pin exact versions only after verifying, on the
+# target Python and OS, that:
+#   - the GDAL/PROJ binary wheels resolve without system packages;
+#   - rasterio and pyproj agree on the bundled PROJ data version;
+#   - geopandas/shapely/pyproj versions are mutually compatible.
+# Pinning these now, untested, would be a fabricated claim about the
+# environment. See docs/data-contract.md for the per-source requirements that
+# will determine which of these are actually needed.
+geo = [
+    "rasterio",
+    "rioxarray",
+    "xarray",
+    "geopandas",
+    "shapely",
+    "pyproj",
+    "osmnx",
+    "networkx",
+]
+
+# Presentation layer only. The dashboard is a visualization and
+# decision-support layer (AGENTS.md 16, architecture.md 15): it reads generated
+# artifacts and never runs acquisition, preprocessing, segmentation, network or
+# hydrology logic. These dependencies are therefore deliberately kept out of the
+# base runtime and the geo extra.
+dashboard = [
+    "streamlit>=1.36",
+    "streamlit-folium>=0.20",
+    "folium>=0.17",
+]
+
+api = [
+    "fastapi>=0.110",
+    "uvicorn>=0.28",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra --strict-markers"

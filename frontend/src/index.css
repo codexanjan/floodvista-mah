@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #050811;
+    color: #f1f5f9;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+}
+
+/* Custom Cyberpunk / Geospatial Command Center Styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #050811;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00f2fe;
+}
+
+.glow-cyan {
+  box-shadow: 0 0 20px -3px rgba(0, 242, 254, 0.4);
+}
+
+.glow-card {
+  background: rgba(11, 19, 41, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 242, 254, 0.16);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glow-card:hover {
+  border-color: rgba(0, 242, 254, 0.4);
+  box-shadow: 0 0 25px -5px rgba(0, 242, 254, 0.2);
+}
+
+/* Leaflet dark theme map styling */
+.leaflet-container {
+  background-color: #050811 !important;
+  font-family: inherit !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #0b1329 !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(0, 242, 254, 0.3) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8) !important;
+  border-radius: 8px !important;
+}
+
+.leaflet-popup-tip {
+  background: #0b1329 !important;
+}
+
+.leaflet-control-zoom a {
+  background-color: #0b1329 !important;
+  color: #00f2fe !important;
+  border: 1px solid rgba(0, 242, 254, 0.3) !important;
+}
