@@ -34,10 +34,18 @@ import {
   Sparkles,
   Menu,
   X,
-  Globe
+  Globe,
+  Satellite,
+  Volume2,
+  VolumeX,
+  Send,
+  PlusCircle,
+  Maximize2,
+  ChevronDown
 } from 'lucide-react';
 import JSZip from 'jszip';
 import { MapView } from './components/MapView';
+import { EvidenceTwinView } from './components/EvidenceTwinView';
 import { Logo } from './components/Logo';
 import { LandingPage } from './components/LandingPage';
 import { AuthModal, UserSession, DEMO_PROFILES } from './components/AuthModal';
@@ -48,7 +56,10 @@ import {
   ScenarioResult,
   ModelEvaluation,
   HydrologyResult,
-  BilingualReport
+  BilingualReport,
+  SupportedLanguage,
+  DisasterAOI,
+  CitizenSOSReport
 } from './types';
 
 import {
@@ -59,6 +70,8 @@ import {
   DEFAULT_REPORT,
   DEFAULT_HYDROLOGY,
   computeScenario,
+  DISASTER_AOI_LOCATIONS,
+  DEFAULT_CITIZEN_REPORTS
 } from './mockData';
 
 export function App() {
@@ -80,7 +93,16 @@ export function App() {
   const [evaluation, setEvaluation] = useState<ModelEvaluation | null>(DEFAULT_EVALUATION);
   const [hydrology, setHydrology] = useState<HydrologyResult | null>(DEFAULT_HYDROLOGY);
   const [report, setReport] = useState<BilingualReport | null>(DEFAULT_REPORT);
-  const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'ne' | 'hi' | 'bn' | 'ta' | 'te' | 'mr'>('en');
+  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('en');
+  const [currentAOI, setCurrentAOI] = useState<DisasterAOI>(DISASTER_AOI_LOCATIONS[0]);
+  const [citizenReports, setCitizenReports] = useState<CitizenSOSReport[]>(DEFAULT_CITIZEN_REPORTS);
+  const [isReportingSOS, setIsReportingSOS] = useState<boolean>(false);
+  const [sosVillage, setSosVillage] = useState<string>('Ghyalchok Upper Hamlet');
+  const [sosTrapped, setSosTrapped] = useState<string>('8');
+  const [sosWaterDepth, setSosWaterDepth] = useState<string>('1.8');
+  const [sosNeeds, setSosNeeds] = useState<string>('Emergency Insulin, Potable Water');
+  const [isPlayingRadioBroadcast, setIsPlayingRadioBroadcast] = useState<boolean>(false);
+  const [activeMenuDropdown, setActiveMenuDropdown] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
   const [isZipping, setIsZipping] = useState<boolean>(false);
@@ -158,6 +180,11 @@ export function App() {
       case 'ta': return report.tamil_markdown || DEFAULT_REPORT.tamil_markdown || report.english_markdown;
       case 'te': return report.telugu_markdown || DEFAULT_REPORT.telugu_markdown || report.english_markdown;
       case 'mr': return report.marathi_markdown || DEFAULT_REPORT.marathi_markdown || report.english_markdown;
+      case 'es': return report.spanish_markdown || DEFAULT_REPORT.spanish_markdown || report.english_markdown;
+      case 'fr': return report.french_markdown || DEFAULT_REPORT.french_markdown || report.english_markdown;
+      case 'ar': return report.arabic_markdown || DEFAULT_REPORT.arabic_markdown || report.english_markdown;
+      case 'de': return report.german_markdown || DEFAULT_REPORT.german_markdown || report.english_markdown;
+      case 'ja': return report.japanese_markdown || DEFAULT_REPORT.japanese_markdown || report.english_markdown;
       case 'en':
       default:
         return report.english_markdown;
@@ -171,14 +198,64 @@ export function App() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Client-Side Standalone Offline Rescue Pack (.zip) Builder
+  // Submit field citizen SOS
+  const handleCitizenSosSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newReport: CitizenSOSReport = {
+      id: `SOS-${Date.now().toString().slice(-4)}`,
+      timestamp: 'Just now',
+      location_name: sosVillage || currentAOI.name,
+      coordinates: [
+        Number((currentAOI.center[1] + (Math.random() - 0.5) * 0.005).toFixed(4)),
+        Number((currentAOI.center[0] + (Math.random() - 0.5) * 0.005).toFixed(4)),
+      ],
+      water_depth_m: parseFloat(sosWaterDepth) || 1.5,
+      trapped_people: parseInt(sosTrapped) || 4,
+      critical_needs: sosNeeds.split(',').map(s => s.trim()),
+      status: 'VERIFIED',
+      reported_by: userSession?.name || 'Local Ground Observer',
+    };
+    setCitizenReports([newReport, ...citizenReports]);
+    setIsReportingSOS(false);
+    confetti({
+      particleCount: 80,
+      spread: 60,
+      origin: { y: 0.6 },
+      colors: ['#00f2fe', '#10b981', '#38bdf8']
+    });
+  };
+
+  // Emergency Radio Audio Broadcast Simulator
+  const handleToggleRadioBroadcast = () => {
+    if (isPlayingRadioBroadcast) {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      setIsPlayingRadioBroadcast(false);
+    } else {
+      setIsPlayingRadioBroadcast(true);
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        const msg = `Attention! Emergency Disaster Broadcast for ${currentAOI.name}. Multiple road corridors severed. Flood surge active. Critical relief teams deployed. Move immediately to high-elevation community shelters.`;
+        const utterance = new SpeechSynthesisUtterance(msg);
+        utterance.rate = 0.95;
+        utterance.pitch = 1.0;
+        utterance.onend = () => setIsPlayingRadioBroadcast(false);
+        utterance.onerror = () => setIsPlayingRadioBroadcast(false);
+        window.speechSynthesis.speak(utterance);
+      } else {
+        setTimeout(() => setIsPlayingRadioBroadcast(false), 6000);
+      }
+    }
+  };
+
+  // Client-Side Standalone Offline Rescue Pack (.zip) Builder across all 12 Languages
   const handleDownloadRescuePack = async () => {
     setIsZipping(true);
     try {
       const zip = new JSZip();
-      const folder = zip.folder("floodvista_trishuli_rescue_pack");
+      const folder = zip.folder("floodvista_rescue_pack_12_languages");
 
-      // 1. Situation Reports across all 7 Indian & regional languages
+      // 1. Situation Reports across all 12 international & regional languages
       folder?.file("situation_report_en.md", report?.english_markdown || DEFAULT_REPORT.english_markdown);
       folder?.file("situation_report_hi.md", report?.hindi_markdown || DEFAULT_REPORT.hindi_markdown || '');
       folder?.file("situation_report_ne.md", report?.nepali_markdown || DEFAULT_REPORT.nepali_markdown);
@@ -186,6 +263,11 @@ export function App() {
       folder?.file("situation_report_ta.md", report?.tamil_markdown || DEFAULT_REPORT.tamil_markdown || '');
       folder?.file("situation_report_te.md", report?.telugu_markdown || DEFAULT_REPORT.telugu_markdown || '');
       folder?.file("situation_report_mr.md", report?.marathi_markdown || DEFAULT_REPORT.marathi_markdown || '');
+      folder?.file("situation_report_es.md", report?.spanish_markdown || DEFAULT_REPORT.spanish_markdown || '');
+      folder?.file("situation_report_fr.md", report?.french_markdown || DEFAULT_REPORT.french_markdown || '');
+      folder?.file("situation_report_ar.md", report?.arabic_markdown || DEFAULT_REPORT.arabic_markdown || '');
+      folder?.file("situation_report_de.md", report?.german_markdown || DEFAULT_REPORT.german_markdown || '');
+      folder?.file("situation_report_ja.md", report?.japanese_markdown || DEFAULT_REPORT.japanese_markdown || '');
 
       // 2. Vector GeoJSON layers
       folder?.file("inundation_footprint.geojson", JSON.stringify(layersData?.buildings || DEFAULT_LAYERS.buildings, null, 2));
@@ -194,13 +276,13 @@ export function App() {
 
       // 3. Metadata & Manifest
       const manifest = {
-        package_id: "FV-RESCUE-TRISHULI-2026-0826",
+        package_id: "FV-RESCUE-OFFLINE-2026",
         generated_at_utc: new Date().toISOString(),
-        event: "Trishuli Valley Flash Flood, Nepal",
-        reference_aoi_km2: 450.0,
-        basemap: "ESRI High-Res Space Recon Satellite (No Watermark)",
+        event: currentAOI.name + ', ' + currentAOI.country,
+        reference_aoi_km2: currentAOI.inundationAreaHa * 30,
+        basemap: "Google Maps Hybrid & ESRI Space Recon Satellite",
         sensor_evidence: ["Sentinel-1 SAR IW (VV/VH)", "Copernicus WorldDEM-30", "OpenStreetMap Snapshot"],
-        supported_languages: ["en", "hi", "ne", "bn", "ta", "te", "mr"],
+        supported_languages: ["en", "hi", "ne", "bn", "ta", "te", "mr", "es", "fr", "ar", "de", "ja"],
         trustscore_percent: 94.2
       };
       folder?.file("manifest.json", JSON.stringify(manifest, null, 2));
@@ -222,22 +304,18 @@ export function App() {
 <body>
   <div class="header">
     <h3 style="margin:0;color:#00f2fe;">FLOODVISTA AI &bull; Offline Tactical Rescue Map</h3>
-    <p style="margin:4px 0 0 0;font-size:12px;color:#94a3b8;">Trishuli Corridor &bull; Multi-Language SitRep &bull; TrustScore: 94.2%</p>
+    <p style="margin:4px 0 0 0;font-size:12px;color:#94a3b8;">${currentAOI.name} &bull; 12-Language SitRep &bull; TrustScore: 94.2%</p>
   </div>
   <div id="map"></div>
   <script>
-    const map = L.map('map').setView([28.003, 85.097], 14);
+    const map = L.map('map').setView([${currentAOI.center[0]}, ${currentAOI.center[1]}], ${currentAOI.zoom});
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
       attribution: 'Esri Satellite Recon'
     }).addTo(map);
 
-    L.circleMarker([28.0032, 85.1029], { radius: 10, fillColor: '#ef4444', color: '#fff', weight: 2, fillOpacity: 0.9 })
-      .bindPopup('<strong>Ghyalchok Upper</strong><br/>Status: 🚨 CUT OFF<br/>Action: Air-drop supplies')
-      .addTo(map);
-
-    L.circleMarker([28.0045, 85.0970], { radius: 9, fillColor: '#10b981', color: '#fff', weight: 2, fillOpacity: 0.9 })
-      .bindPopup('<strong>Sano Dovan</strong><br/>Status: 🟢 CONNECTED<br/>Route Clear to Dhunche Hospital')
+    L.circleMarker([${currentAOI.center[0] + 0.002}, ${currentAOI.center[1] + 0.003}], { radius: 10, fillColor: '#ef4444', color: '#fff', weight: 2, fillOpacity: 0.9 })
+      .bindPopup('<strong>${currentAOI.name} Epicenter</strong><br/>Status: 🚨 CUT OFF<br/>Action: Air-drop supplies')
       .addTo(map);
   </script>
 </body>
@@ -249,13 +327,12 @@ export function App() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "floodvista_trishuli_rescue_pack.zip";
+      a.download = `floodvista_${currentAOI.id}_rescue_pack.zip`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      // Visual Delight: Confetti Celebration
       confetti({
         particleCount: 90,
         spread: 70,
@@ -274,7 +351,10 @@ export function App() {
     return (
       <>
         <LandingPage
-          onLaunchConsole={() => setCurrentPage('console')}
+          onLaunchConsole={(aoi) => {
+            if (aoi) setCurrentAOI(aoi);
+            setCurrentPage('console');
+          }}
           onOpenAuth={() => setIsAuthOpen(true)}
           onOpenDocs={() => setCurrentPage('docs')}
         />
@@ -468,44 +548,302 @@ export function App() {
         )}
       </AnimatePresence>
 
-      {/* Main Mission Tabs Navigation Bar (When on Console) */}
+      {/* TOP APPLICATION MENU BAR */}
       {currentPage === 'console' && (
-        <nav className="bg-slate-950/90 border-b border-cyan-500/10 px-4 overflow-x-auto flex items-center gap-1 scrollbar-none">
-          {[
-            { id: 'command', label: 'Command Center', icon: Activity, badge: 'Live Map' },
-            { id: 'twin', label: '01. Flood Evidence Twin', icon: Layers, badge: 'Explainable AI' },
-            { id: 'resilience', label: '02. Rescue Route Resilience Lab', icon: Route, badge: 'Dijkstra' },
-            { id: 'trustscore', label: '03. TrustScore Engine', icon: ShieldCheck, badge: 'Uncertainty' },
-            { id: 'simulator', label: '04. What-If Simulator', icon: Sliders, badge: 'Live Controls' },
-            { id: 'reports', label: '05. Multilingual SitRep & Offline Pack', icon: FileText, badge: '7 Languages' },
-            { id: 'hydrology', label: 'Downstream Flow Path Explorer', icon: Waves, badge: 'D8 Topo' },
-            { id: 'evaluation', label: 'Scientific Provenance & Metrics', icon: Binary, badge: 'Kuro Siwo' },
-          ].map(tab => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
+        <div className="bg-[#070b16] border-b border-cyan-500/20 px-4 py-1.5 flex items-center justify-between text-xs relative z-40 select-none">
+          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+            {/* File Menu */}
+            <div className="relative">
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 py-3 px-3.5 text-xs font-medium border-b-2 whitespace-nowrap transition-colors ${
-                  isActive
-                    ? 'border-cyan-400 text-cyan-300 bg-cyan-500/10 font-semibold'
-                    : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                }`}
+                onClick={() => setActiveMenuDropdown(activeMenuDropdown === 'file' ? null : 'file')}
+                className="px-2.5 py-1 rounded text-slate-300 hover:text-cyan-300 hover:bg-slate-800/80 flex items-center gap-1 transition-colors"
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-cyan-400' : 'text-slate-500'}`} />
-                <span>{tab.label}</span>
-                {tab.badge && (
-                  <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-mono uppercase ${
-                    isActive ? 'bg-cyan-950 text-cyan-300 border border-cyan-500/40' : 'bg-slate-900 text-slate-500'
-                  }`}>
-                    {tab.badge}
-                  </span>
-                )}
+                <span>File</span> <ChevronDown className="w-3 h-3 text-slate-400" />
               </button>
-            );
-          })}
-        </nav>
+              {activeMenuDropdown === 'file' && (
+                <div className="absolute left-0 top-7 w-60 bg-slate-900 border border-cyan-500/30 rounded-lg shadow-2xl p-1.5 space-y-1 z-50">
+                  <button
+                    onClick={() => { handleDownloadRescuePack(); setActiveMenuDropdown(null); }}
+                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-200 flex items-center gap-2"
+                  >
+                    <Download className="w-3.5 h-3.5 text-cyan-400" /> Download Rescue Pack (.zip)
+                  </button>
+                  <button
+                    onClick={() => { copyReportMarkdown(); setActiveMenuDropdown(null); }}
+                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-200 flex items-center gap-2"
+                  >
+                    <Copy className="w-3.5 h-3.5 text-teal-400" /> Copy Incident SitRep (.md)
+                  </button>
+                  <button
+                    onClick={() => { window.print(); setActiveMenuDropdown(null); }}
+                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-200 flex items-center gap-2"
+                  >
+                    <Printer className="w-3.5 h-3.5 text-slate-400" /> Print Evacuation Brief (PDF)
+                  </button>
+                  <div className="border-t border-slate-800 my-1" />
+                  <button
+                    onClick={() => { setCurrentPage('landing'); setActiveMenuDropdown(null); }}
+                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-300 flex items-center gap-2"
+                  >
+                    <Home className="w-3.5 h-3.5 text-slate-400" /> Return to Home Landing
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Portals Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setActiveMenuDropdown(activeMenuDropdown === 'portals' ? null : 'portals')}
+                className="px-2.5 py-1 rounded text-cyan-300 hover:text-white hover:bg-slate-800/80 flex items-center gap-1 font-semibold transition-colors"
+              >
+                <span>Portals &amp; Modules</span> <ChevronDown className="w-3 h-3 text-cyan-400" />
+              </button>
+              {activeMenuDropdown === 'portals' && (
+                <div className="absolute left-0 top-7 w-72 bg-slate-900 border border-cyan-500/30 rounded-lg shadow-2xl p-1.5 space-y-1 z-50">
+                  <div className="px-2 py-1 text-[10px] text-slate-500 font-mono uppercase border-b border-slate-800">Operational Mission Modules</div>
+                  {[
+                    { id: 'command', label: 'Command Center & Tactical GIS', badge: 'Live Map' },
+                    { id: 'twin', label: '01. Flood Evidence Twin', badge: 'Explainable AI' },
+                    { id: 'resilience', label: '02. Rescue Route Resilience Lab', badge: 'Dijkstra' },
+                    { id: 'trustscore', label: '03. TrustScore Uncertainty Engine', badge: 'Multi-Sensor' },
+                    { id: 'simulator', label: '04. What-If Disaster Simulator', badge: 'Live Physics' },
+                    { id: 'reports', label: '05. Multilingual SitRep & Citizen SOS', badge: '12 Languages' },
+                    { id: 'hydrology', label: 'Downstream Flow Path Explorer', badge: 'D8 Topo' },
+                    { id: 'evaluation', label: 'Scientific Provenance & Metrics', badge: 'Kuro Siwo' },
+                  ].map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => { setActiveTab(p.id as any); setActiveMenuDropdown(null); }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded flex items-center justify-between text-xs transition-colors ${
+                        activeTab === p.id ? 'bg-cyan-500/20 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'
+                      }`}
+                    >
+                      <span>{p.label}</span>
+                      <span className="text-[9px] px-1.5 rounded bg-slate-950 font-mono text-cyan-400">{p.badge}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Disaster AOIs Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setActiveMenuDropdown(activeMenuDropdown === 'aois' ? null : 'aois')}
+                className="px-2.5 py-1 rounded text-slate-300 hover:text-cyan-300 hover:bg-slate-800/80 flex items-center gap-1 transition-colors"
+              >
+                <MapPin className="w-3 h-3 text-red-400" />
+                <span>Disaster Locations</span> <ChevronDown className="w-3 h-3 text-slate-400" />
+              </button>
+              {activeMenuDropdown === 'aois' && (
+                <div className="absolute left-0 top-7 w-72 bg-slate-900 border border-cyan-500/30 rounded-lg shadow-2xl p-1.5 space-y-1 z-50">
+                  <div className="px-2 py-1 text-[10px] text-slate-500 font-mono uppercase border-b border-slate-800">Global Flood Hotspots</div>
+                  {DISASTER_AOI_LOCATIONS.map(aoi => (
+                    <button
+                      key={aoi.id}
+                      onClick={() => { setCurrentAOI(aoi); setActiveMenuDropdown(null); }}
+                      className={`w-full text-left px-2.5 py-2 rounded flex items-center justify-between text-xs transition-colors ${
+                        currentAOI.id === aoi.id ? 'bg-cyan-500/20 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'
+                      }`}
+                    >
+                      <div>
+                        <div className="font-semibold flex items-center gap-1.5">
+                          <span>{aoi.flag}</span>
+                          <span>{aoi.name}</span>
+                        </div>
+                        <div className="text-[10px] text-slate-400">{aoi.country} &bull; {aoi.inundationAreaHa} ha</div>
+                      </div>
+                      {currentAOI.id === aoi.id && <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Languages Menu (12 Languages) */}
+            <div className="relative">
+              <button
+                onClick={() => setActiveMenuDropdown(activeMenuDropdown === 'lang' ? null : 'lang')}
+                className="px-2.5 py-1 rounded text-slate-300 hover:text-cyan-300 hover:bg-slate-800/80 flex items-center gap-1 transition-colors"
+              >
+                <Globe className="w-3 h-3 text-cyan-400" />
+                <span>12 Languages ({selectedLanguage.toUpperCase()})</span> <ChevronDown className="w-3 h-3 text-slate-400" />
+              </button>
+              {activeMenuDropdown === 'lang' && (
+                <div className="absolute left-0 top-7 w-64 bg-slate-900 border border-cyan-500/30 rounded-lg shadow-2xl p-1.5 grid grid-cols-2 gap-1 z-50">
+                  {[
+                    { id: 'en', label: 'English', flag: '🇬🇧' },
+                    { id: 'hi', label: 'हिन्दी', flag: '🇮🇳' },
+                    { id: 'ne', label: 'नेपाली', flag: '🇳🇵' },
+                    { id: 'bn', label: 'বাংলা', flag: '🇧🇩' },
+                    { id: 'ta', label: 'தமிழ்', flag: '🇮🇳' },
+                    { id: 'te', label: 'తెలుగు', flag: '🇮🇳' },
+                    { id: 'mr', label: 'मराठी', flag: '🇮🇳' },
+                    { id: 'es', label: 'Español', flag: '🇪🇸' },
+                    { id: 'fr', label: 'Français', flag: '🇫🇷' },
+                    { id: 'ar', label: 'العربية', flag: '🇸🇦' },
+                    { id: 'de', label: 'Deutsch', flag: '🇩🇪' },
+                    { id: 'ja', label: '日本語', flag: '🇯🇵' },
+                  ].map(l => (
+                    <button
+                      key={l.id}
+                      onClick={() => { setSelectedLanguage(l.id as any); setActiveMenuDropdown(null); }}
+                      className={`p-1.5 rounded text-left flex items-center gap-1.5 text-xs ${
+                        selectedLanguage === l.id ? 'bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/40' : 'text-slate-300 hover:bg-slate-800'
+                      }`}
+                    >
+                      <span>{l.flag}</span>
+                      <span className="truncate">{l.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Tools Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setActiveMenuDropdown(activeMenuDropdown === 'tools' ? null : 'tools')}
+                className="px-2.5 py-1 rounded text-slate-300 hover:text-cyan-300 hover:bg-slate-800/80 flex items-center gap-1 transition-colors"
+              >
+                <span>Tools</span> <ChevronDown className="w-3 h-3 text-slate-400" />
+              </button>
+              {activeMenuDropdown === 'tools' && (
+                <div className="absolute left-0 top-7 w-64 bg-slate-900 border border-cyan-500/30 rounded-lg shadow-2xl p-1.5 space-y-1 z-50">
+                  <button
+                    onClick={() => { setBridgeOverrideSevered(!bridgeOverrideSevered); setActiveMenuDropdown(null); }}
+                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-200 flex items-center justify-between text-xs"
+                  >
+                    <span>Sever Bridge B-104 Override</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${bridgeOverrideSevered ? 'bg-red-950 text-red-300' : 'bg-slate-800 text-slate-400'}`}>
+                      {bridgeOverrideSevered ? 'SEVERED' : 'INTACT'}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => { setIsReportingSOS(true); setActiveMenuDropdown(null); }}
+                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-200 flex items-center gap-2 text-xs"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5 text-cyan-400" /> Log Citizen Ground SOS
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Status Indicator */}
+          <div className="flex items-center gap-3 text-[11px] font-mono text-slate-400">
+            <span className="hidden sm:inline text-cyan-300 font-semibold">{currentAOI.flag} {currentAOI.name}</span>
+            <span className="text-slate-600 hidden sm:inline">|</span>
+            <span className="text-emerald-400 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Multi-Sensor Active
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* DEDICATED SINGLE-TAB WORKSPACE HEADER (Replacing crowded 8 tabs) */}
+      {currentPage === 'console' && (
+        <div className="bg-slate-950 border-b border-cyan-500/20 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-md">
+          {/* Left: Active Portal Selector Dropdown */}
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <button
+                onClick={() => setActiveMenuDropdown(activeMenuDropdown === 'activeTab' ? null : 'activeTab')}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-950 to-slate-900 border border-cyan-500/40 text-cyan-300 hover:text-white font-bold text-xs sm:text-sm shadow-cyan-glow transition-all"
+              >
+                <Activity className="w-4 h-4 text-cyan-400" />
+                <span>
+                  {activeTab === 'command' && 'Command Center & Tactical GIS'}
+                  {activeTab === 'twin' && '01. Flood Evidence Twin (SAR Radar Lab)'}
+                  {activeTab === 'resilience' && '02. Rescue Route Resilience Lab (Dijkstra)'}
+                  {activeTab === 'trustscore' && '03. TrustScore Uncertainty Engine'}
+                  {activeTab === 'simulator' && '04. What-If Disaster Simulator'}
+                  {activeTab === 'reports' && '05. Multilingual SitRep & Citizen SOS'}
+                  {activeTab === 'hydrology' && '06. Downstream Flow Path Explorer'}
+                  {activeTab === 'evaluation' && '07. Scientific Provenance & Metrics'}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5 text-cyan-400 ml-1" />
+              </button>
+
+              {activeMenuDropdown === 'activeTab' && (
+                <div className="absolute left-0 top-10 w-72 bg-slate-900/98 backdrop-blur-xl border border-cyan-500/40 rounded-xl shadow-2xl p-1.5 space-y-1 z-50 text-xs">
+                  <div className="px-2 py-1 text-[10px] text-slate-500 font-mono uppercase border-b border-slate-800">
+                    Switch Mission Portal
+                  </div>
+                  {[
+                    { id: 'command', label: 'Command Center & Triage Map', badge: 'Live GIS' },
+                    { id: 'twin', label: '01. Flood Evidence Twin', badge: 'Explainable AI' },
+                    { id: 'resilience', label: '02. Rescue Route Resilience Lab', badge: 'Dijkstra' },
+                    { id: 'trustscore', label: '03. TrustScore Engine', badge: 'Uncertainty' },
+                    { id: 'simulator', label: '04. What-If Simulator', badge: 'Live Controls' },
+                    { id: 'reports', label: '05. Multilingual SitRep & SOS', badge: '12 Languages' },
+                    { id: 'hydrology', label: 'Downstream Flow Path Explorer', badge: 'D8 Topo' },
+                    { id: 'evaluation', label: 'Scientific Provenance & Metrics', badge: 'Kuro Siwo' },
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => { setActiveTab(tab.id as any); setActiveMenuDropdown(null); }}
+                      className={`w-full text-left px-2.5 py-2 rounded-lg flex items-center justify-between transition-colors ${
+                        activeTab === tab.id
+                          ? 'bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-300 font-bold border border-cyan-500/40'
+                          : 'text-slate-300 hover:bg-slate-800'
+                      }`}
+                    >
+                      <span>{tab.label}</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-950 font-mono text-cyan-400">{tab.badge}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 text-[10px] font-mono uppercase">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              Single Focus Workspace
+            </span>
+          </div>
+
+          {/* Center: Fast Prev / Next Navigation */}
+          <div className="flex items-center gap-1.5 text-xs bg-slate-900 border border-slate-800 rounded-lg p-1">
+            <button
+              onClick={() => {
+                const tabs = ['command', 'twin', 'resilience', 'trustscore', 'simulator', 'reports', 'hydrology', 'evaluation'];
+                const idx = tabs.indexOf(activeTab);
+                const prev = idx > 0 ? tabs[idx - 1] : tabs[tabs.length - 1];
+                setActiveTab(prev as any);
+              }}
+              className="px-2.5 py-1 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-colors flex items-center gap-1 font-semibold"
+              title="Previous Portal"
+            >
+              &larr; Prev
+            </button>
+            <span className="text-[11px] text-slate-500 px-2 font-mono">
+              {['command', 'twin', 'resilience', 'trustscore', 'simulator', 'reports', 'hydrology', 'evaluation'].indexOf(activeTab) + 1} / 8
+            </span>
+            <button
+              onClick={() => {
+                const tabs = ['command', 'twin', 'resilience', 'trustscore', 'simulator', 'reports', 'hydrology', 'evaluation'];
+                const idx = tabs.indexOf(activeTab);
+                const next = idx < tabs.length - 1 ? tabs[idx + 1] : tabs[0];
+                setActiveTab(next as any);
+              }}
+              className="px-2.5 py-1 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-colors flex items-center gap-1 font-semibold"
+              title="Next Portal"
+            >
+              Next &rarr;
+            </button>
+          </div>
+
+          {/* Right: Quick Active AOI Badge */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300">
+              <MapPin className="w-3.5 h-3.5 text-red-400" />
+              <span className="font-semibold text-white">{currentAOI.flag} {currentAOI.name}</span>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Main Content Area */}
@@ -522,17 +860,17 @@ export function App() {
                 {/* KPI Cards Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                   {[
-                    { label: 'Assessed AOI', value: `${summary?.assessed_area_km2 || 450} km²`, desc: 'Trishuli Basin', color: 'text-cyan-400' },
-                    { label: 'Flood Inundation', value: `${summary?.inundation_extent_ha || 14.8} ha`, desc: 'Predicted Footprint', color: 'text-sky-400' },
-                    { label: 'Exposed Buildings', value: `${summary?.exposed_buildings_count || 18}`, desc: 'Within Footprint', color: 'text-amber-400' },
+                    { label: 'Assessed AOI', value: `${currentAOI.name}`, desc: `${currentAOI.region}, ${currentAOI.country}`, color: 'text-cyan-400' },
+                    { label: 'Flood Inundation', value: `${currentAOI.inundationAreaHa} ha`, desc: 'Satellite SAR Measured', color: 'text-sky-400' },
+                    { label: 'Exposed Buildings', value: `${currentAOI.exposedBuildings}`, desc: 'Within Footprint', color: 'text-amber-400' },
                     { label: 'Disrupted Roads', value: `${summary?.potentially_disrupted_road_km || 8.65} km`, desc: 'Corridors Severed', color: 'text-red-400' },
-                    { label: 'Cut-off Villages', value: `${summary?.cutoff_settlements.length || 2}`, desc: 'Zero Access to Hubs', color: 'text-rose-400' },
+                    { label: 'Cut-off Villages', value: `${currentAOI.cutoffVillages}`, desc: 'Zero Access to Hubs', color: 'text-rose-400' },
                     { label: 'Evidence TrustScore', value: `${summary?.trustscore_percent || 94.2}%`, desc: 'Multi-Sensor Reliability', color: 'text-emerald-400' },
                   ].map((kpi, idx) => (
                     <div key={idx} className="glow-card p-3 rounded-xl border border-slate-800 bg-[#0b1329]/70">
                       <div className="text-[11px] text-slate-400 uppercase tracking-wider">{kpi.label}</div>
-                      <div className={`text-xl font-bold font-mono my-0.5 ${kpi.color}`}>{kpi.value}</div>
-                      <div className="text-[10px] text-slate-500">{kpi.desc}</div>
+                      <div className={`text-base sm:text-lg font-bold font-mono my-0.5 ${kpi.color} truncate`}>{kpi.value}</div>
+                      <div className="text-[10px] text-slate-500 truncate">{kpi.desc}</div>
                     </div>
                   ))}
                 </div>
@@ -541,6 +879,8 @@ export function App() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                   <div className="lg:col-span-2 h-[420px] sm:h-[500px] lg:h-[580px]">
                     <MapView
+                      center={currentAOI.center}
+                      zoom={currentAOI.zoom}
                       geojsonLayers={layersData}
                       hydrologyCorridor={hydrology?.flow_corridor_geojson}
                       hydrologyPath={hydrology?.path_line_geojson}
@@ -598,7 +938,7 @@ export function App() {
                         { title: '02. Rescue Route Resilience', tab: 'resilience', desc: 'Dijkstra shortest paths & isolated villages' },
                         { title: '03. TrustScore Engine', tab: 'trustscore', desc: 'Sensor agreement & uncertainty audit' },
                         { title: '04. What-If Simulator', tab: 'simulator', desc: 'Live sliders & scenario comparison' },
-                        { title: '05. 7-Language SitRep Pack', tab: 'reports', desc: '7 Indian & regional languages + ZIP download' },
+                        { title: '05. 12-Language SitRep Pack', tab: 'reports', desc: '12 Indian & Global languages + Audio Radio & ZIP' },
                       ].map((item, idx) => (
                         <button
                           key={idx}
@@ -621,89 +961,7 @@ export function App() {
             {/* TAB: 01. FLOOD EVIDENCE TWIN */}
             {activeTab === 'twin' && (
               <div className="space-y-4 animate-fade-in">
-                <div className="glow-card p-4 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#0b1329]/80">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-base font-bold text-cyan-300">01. Flood Evidence Twin</h2>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30">
-                        Explainable AI
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Synchronized before-and-after satellite viewer. Click any location on the map to reveal raw SAR dB backscatter, optical index, terrain slope, and acquisition details.
-                    </p>
-                  </div>
-
-                  <div className="flex rounded-lg bg-slate-900 border border-slate-700 p-0.5 text-xs">
-                    <button
-                      onClick={() => setTwinViewMode('post')}
-                      className={`px-3 py-1 rounded font-medium transition-colors ${
-                        twinViewMode === 'post' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      Post-Event SAR (Aug 26)
-                    </button>
-                    <button
-                      onClick={() => setTwinViewMode('pre')}
-                      className={`px-3 py-1 rounded font-medium transition-colors ${
-                        twinViewMode === 'pre' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      Pre-Event Dry (Aug 10)
-                    </button>
-                    <button
-                      onClick={() => setTwinViewMode('diff')}
-                      className={`px-3 py-1 rounded font-medium transition-colors ${
-                        twinViewMode === 'diff' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      Log-Ratio Diff (ΔdB)
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-[500px] lg:h-[600px]">
-                  <div className="glow-card p-4 rounded-xl flex flex-col bg-[#0b1329]/70 h-[380px] sm:h-[460px] lg:h-full">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-cyan-300">
-                        {twinViewMode === 'post' && 'Sentinel-1 SAR IW (VV/VH) & Optical Water Indices'}
-                        {twinViewMode === 'pre' && 'Pre-Event Baseline SAR (Reference Orbit Track 165)'}
-                        {twinViewMode === 'diff' && 'Multi-Temporal Backscatter Difference & Debris Surge'}
-                      </span>
-                      <span className="text-[10px] font-mono text-slate-400">Copernicus Sentinel-1</span>
-                    </div>
-                    <div className="flex-1 rounded-lg overflow-hidden border border-slate-800 relative bg-slate-950 flex items-center justify-center">
-                      <img
-                        src="/floodvista_evidence_twin.jpg"
-                        alt="Flood Evidence Twin Satellite Inspection"
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute top-3 left-3 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-cyan-500/40 text-xs text-cyan-300 font-mono space-y-0.5">
-                        <div>MODE: {twinViewMode === 'post' ? 'POST-FLOOD SAR DETECTION' : twinViewMode === 'pre' ? 'PRE-FLOOD BASELINE' : 'MULTI-TEMPORAL ΔdB'}</div>
-                        <div className="text-[10px] text-slate-400">Pass: Ascending &bull; Inc. Angle: 38.4° &bull; Pol: VV+VH</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="glow-card p-4 rounded-xl flex flex-col bg-[#0b1329]/70 h-[380px] sm:h-[460px] lg:h-full">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-cyan-300">Click-to-Explain Spatial Inspector</span>
-                      <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                        Click map to inspect any point
-                      </span>
-                    </div>
-                    <div className="flex-1 rounded-lg overflow-hidden border border-slate-800">
-                      <MapView
-                        geojsonLayers={layersData}
-                        showBuildings={showBuildings}
-                        showRoads={showRoads}
-                        showSettlements={showSettlements}
-                        showHydrology={false}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <EvidenceTwinView currentAOI={currentAOI} />
               </div>
             )}
 
@@ -1036,18 +1294,38 @@ export function App() {
                 <div className="glow-card p-4 rounded-xl flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-[#0b1329]/80">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-base font-bold text-cyan-300">05. Multilingual Situation Reports &amp; Offline Rescue Pack</h2>
+                      <h2 className="text-base font-bold text-cyan-300">05. Multilingual Situation Reports &amp; Emergency Broadcast</h2>
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        7 Languages Supported
+                        12 Languages Supported
                       </span>
                     </div>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Operational incident reports generated directly from measured satellite outputs across English, Hindi, Nepali, Bengali, Tamil, Telugu, and Marathi.
+                      Operational incident reports generated directly from measured satellite outputs across 12 Indian and international languages. Integrated with simulated field citizen SOS reports and audio broadcast dispatch.
                     </p>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={handleToggleRadioBroadcast}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        isPlayingRadioBroadcast
+                          ? 'bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/30'
+                          : 'bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30'
+                      }`}
+                    >
+                      {isPlayingRadioBroadcast ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                      {isPlayingRadioBroadcast ? 'Stop Audio Broadcast' : 'Simulate Radio Broadcast'}
+                    </button>
+
+                    <button
+                      onClick={() => setIsReportingSOS(!isReportingSOS)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950 hover:bg-cyan-900 border border-cyan-500/40 text-xs text-cyan-300 font-semibold"
+                    >
+                      <PlusCircle className="w-3.5 h-3.5" />
+                      {isReportingSOS ? 'Close SOS Form' : 'Report Ground SOS'}
+                    </button>
+
                     <button
                       onClick={copyReportMarkdown}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700"
@@ -1062,15 +1340,15 @@ export function App() {
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-950 font-bold text-xs shadow-cyan-glow"
                     >
                       <Download className="w-3.5 h-3.5" />
-                      {isZipping ? 'Generating...' : 'Download 7-Lang ZIP Pack'}
+                      {isZipping ? 'Generating...' : 'Download 12-Lang ZIP Pack'}
                     </button>
                   </div>
                 </div>
 
-                {/* 7 Indian & Regional Languages Switcher Bar */}
-                <div className="flex items-center gap-2 overflow-x-auto p-1.5 rounded-xl bg-slate-900/80 border border-slate-800 scrollbar-none">
+                {/* 12 International & Regional Languages Switcher Bar */}
+                <div className="flex items-center gap-2 overflow-x-auto p-2 rounded-xl bg-slate-900/80 border border-slate-800 scrollbar-none">
                   <span className="text-xs text-slate-400 font-semibold px-2 flex items-center gap-1.5 shrink-0">
-                    <Globe className="w-3.5 h-3.5 text-cyan-400" /> Select Language:
+                    <Globe className="w-3.5 h-3.5 text-cyan-400" /> 12 Languages:
                   </span>
                   {[
                     { id: 'en', label: 'English', flag: '🇬🇧' },
@@ -1080,6 +1358,11 @@ export function App() {
                     { id: 'ta', label: 'தமிழ் (Tamil)', flag: '🇮🇳' },
                     { id: 'te', label: 'తెలుగు (Telugu)', flag: '🇮🇳' },
                     { id: 'mr', label: 'मराठी (Marathi)', flag: '🇮🇳' },
+                    { id: 'es', label: 'Español (Spanish)', flag: '🇪🇸' },
+                    { id: 'fr', label: 'Français (French)', flag: '🇫🇷' },
+                    { id: 'ar', label: 'العربية (Arabic)', flag: '🇸🇦' },
+                    { id: 'de', label: 'Deutsch (German)', flag: '🇩🇪' },
+                    { id: 'ja', label: '日本語 (Japanese)', flag: '🇯🇵' },
                   ].map(lang => (
                     <button
                       key={lang.id}
@@ -1096,26 +1379,161 @@ export function App() {
                   ))}
                 </div>
 
-                <div className="glow-card p-6 rounded-xl space-y-4 max-w-4xl mx-auto bg-slate-950/90 text-slate-200 border border-cyan-500/30">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs px-2.5 py-1 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30">
-                        {report?.report_id || 'FV-REP-TRISHULI-2026'}
-                      </span>
-                      <span className="text-xs text-slate-400">Generated: {report?.generated_at_utc}</span>
+                {/* Citizen SOS Incident Submission Form (Collapsible) */}
+                {isReportingSOS && (
+                  <form onSubmit={handleCitizenSosSubmit} className="glow-card p-4 rounded-xl bg-[#0b1329]/90 border border-cyan-500/40 space-y-3 animate-fade-in">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                      <div className="flex items-center gap-2 text-xs font-bold text-cyan-300">
+                        <AlertTriangle className="w-4 h-4 text-amber-400" />
+                        Log Ground-Truth Emergency Incident / Citizen SOS
+                      </div>
+                      <span className="text-[10px] text-slate-400">Target AOI: {currentAOI.name}</span>
                     </div>
-                    <button
-                      onClick={() => window.print()}
-                      className="text-xs text-slate-400 hover:text-cyan-300 flex items-center gap-1"
-                    >
-                      <Printer className="w-3.5 h-3.5" /> Print / Save PDF
-                    </button>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                      <div>
+                        <label className="block text-slate-400 text-[10px] mb-1">Hamlet / Settlement Name</label>
+                        <input
+                          type="text"
+                          value={sosVillage}
+                          onChange={e => setSosVillage(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-cyan-400"
+                          placeholder="e.g. Lower Reach Hamlet"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-400 text-[10px] mb-1">Trapped / Stranded Individuals</label>
+                        <input
+                          type="number"
+                          value={sosTrapped}
+                          onChange={e => setSosTrapped(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-cyan-400"
+                          min="1"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-400 text-[10px] mb-1">Observed Water Depth (Metres)</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={sosWaterDepth}
+                          onChange={e => setSosWaterDepth(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-cyan-400"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-400 text-[10px] mb-1">Critical Supplies Required</label>
+                        <input
+                          type="text"
+                          value={sosNeeds}
+                          onChange={e => setSosNeeds(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:border-cyan-400"
+                          placeholder="e.g. Drinking Water, Insulin"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setIsReportingSOS(false)}
+                        className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-gradient-to-r from-red-500 to-amber-500 hover:from-red-400 hover:to-amber-400 text-white font-bold text-xs shadow-md"
+                      >
+                        <Send className="w-3.5 h-3.5" /> Submit Ground SOS Telemetry
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* Ground Truth SOS Incident List & SitRep Preview Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                  {/* Left Column: Citizen SOS Emergency Feed */}
+                  <div className="lg:col-span-1 space-y-3">
+                    <div className="glow-card p-4 rounded-xl bg-[#0b1329]/80 border border-slate-800 space-y-3">
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <div className="flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-red-400 animate-pulse" />
+                          <span className="text-xs font-bold text-slate-200">Ground-Truth SOS Feed</span>
+                        </div>
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-red-950 text-red-300 border border-red-500/30">
+                          {citizenReports.length} Incidents
+                        </span>
+                      </div>
+
+                      <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin">
+                        {citizenReports.map(sos => (
+                          <div key={sos.id} className="p-3 rounded-lg bg-slate-900/90 border border-slate-800/80 space-y-1.5">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <div className="text-xs font-bold text-slate-100 flex items-center gap-1.5">
+                                  <MapPin className="w-3 h-3 text-red-400" />
+                                  {sos.location_name}
+                                </div>
+                                <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+                                  {sos.timestamp} &bull; By {sos.reported_by}
+                                </div>
+                              </div>
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/30">
+                                {sos.status}
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-slate-800/60 font-mono">
+                              <div className="text-slate-400">
+                                Trapped: <span className="text-amber-400 font-bold">{sos.trapped_people}</span>
+                              </div>
+                              <div className="text-slate-400">
+                                Depth: <span className="text-cyan-300 font-bold">{sos.water_depth_m}m</span>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap gap-1 pt-1">
+                              {sos.critical_needs.map((need, i) => (
+                                <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                                  {need}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 font-sans">
-                    <pre className="whitespace-pre-wrap font-sans text-xs text-slate-200 leading-relaxed font-medium">
-                      {getActiveReportMarkdown()}
-                    </pre>
+                  {/* Right Column: SitRep Markdown Preview */}
+                  <div className="lg:col-span-2">
+                    <div className="glow-card p-6 rounded-xl space-y-4 bg-slate-950/90 text-slate-200 border border-cyan-500/30 h-full flex flex-col">
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs px-2.5 py-1 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30">
+                            {report?.report_id || 'FV-REP-TRISHULI-2026'}
+                          </span>
+                          <span className="text-xs text-slate-400">Generated: {report?.generated_at_utc}</span>
+                        </div>
+                        <button
+                          onClick={() => window.print()}
+                          className="text-xs text-slate-400 hover:text-cyan-300 flex items-center gap-1 px-2.5 py-1 rounded bg-slate-900 border border-slate-800"
+                        >
+                          <Printer className="w-3.5 h-3.5" /> Print / Save PDF
+                        </button>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 font-sans flex-1 overflow-y-auto max-h-[500px]">
+                        <pre className="whitespace-pre-wrap font-sans text-xs text-slate-200 leading-relaxed font-medium">
+                          {getActiveReportMarkdown()}
+                        </pre>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

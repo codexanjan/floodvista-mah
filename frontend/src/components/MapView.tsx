@@ -2,48 +2,49 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { Layers, MapPin, AlertTriangle, ShieldCheck, Info, Compass, CheckCircle2 } from 'lucide-react';
 
-// Support optional CARTO API key from client environment or storage without hardcoding secrets
-export const getCartoApiKey = (): string => {
-  if (typeof window !== 'undefined') {
-    return window.localStorage.getItem('CARTO_API_KEY') || '';
-  }
-  return '';
-};
-
-export const getBasemapUrl = (subpath: string): string => {
-  const key = getCartoApiKey();
-  const base = `https://{s}.basemaps.cartocdn.com/rastertiles/${subpath}/{z}/{x}/{y}{r}.png`;
-  return key ? `${base}?api_key=${encodeURIComponent(key)}` : base;
-};
-
+// High-Definition Realistic Basemaps (Google Maps Platform, ESRI Space Recon, OSM HOT)
 export const BASEMAP_OPTIONS = [
   {
-    id: 'satellite',
-    label: 'ESRI Space Recon Satellite (High-Res)',
+    id: 'google_hybrid',
+    label: 'Google Maps Satellite Hybrid (Realistic)',
+    url: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Maps Platform Imagery',
+    subdomains: '0123',
+  },
+  {
+    id: 'google_satellite',
+    label: 'Google Maps Space Recon Satellite',
+    url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Maps Platform Satellite Recon',
+    subdomains: '0123',
+  },
+  {
+    id: 'google_terrain',
+    label: 'Google Maps Physical Terrain & Contours',
+    url: 'https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Maps Platform Physical',
+    subdomains: '0123',
+  },
+  {
+    id: 'esri_satellite',
+    label: 'ESRI World Recon Satellite (Copernicus 10m)',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: '&copy; Esri, Maxar, Earthstar Geographics, Copernicus Sentinel-2',
+    attribution: '&copy; Esri, Maxar, Earthstar, Copernicus Sentinel-2',
     subdomains: 'abcd',
   },
   {
-    id: 'tactical_dark',
-    label: 'Tactical Dark Canvas (Night Recon)',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-    attribution: '&copy; Esri, HERE, Garmin, OpenStreetMap',
+    id: 'esri_topo',
+    label: 'ESRI Tactical Topo & Shaded Relief',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri, USGS, OpenStreetMap',
     subdomains: 'abcd',
   },
   {
-    id: 'osm_topo',
-    label: 'OpenStreetMap Operational Topo',
-    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenStreetMap contributors',
+    id: 'osm_humanitarian',
+    label: 'Humanitarian OSM Relief (HOT Disaster Grid)',
+    url: 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+    attribution: '&copy; OpenStreetMap Humanitarian contributors',
     subdomains: 'abc',
-  },
-  {
-    id: 'carto_dark',
-    label: 'CARTO Dark Matter (Custom Key)',
-    url: getBasemapUrl('dark_all'),
-    attribution: '&copy; CARTO &copy; OpenStreetMap',
-    subdomains: 'abcd',
   },
 ];
 
@@ -84,7 +85,7 @@ export const MapView: React.FC<MapViewProps> = ({
   const mapRef = useRef<L.Map | null>(null);
   const layersGroupRef = useRef<L.LayerGroup | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
-  const [selectedBasemap, setSelectedBasemap] = useState<string>('satellite');
+  const [selectedBasemap, setSelectedBasemap] = useState<string>('google_hybrid');
   const [selectedInfo, setSelectedInfo] = useState<any>(null);
   const [showBasemapMenu, setShowBasemapMenu] = useState<boolean>(false);
   const [isLegendOpen, setIsLegendOpen] = useState<boolean>(true);
@@ -116,8 +117,8 @@ export const MapView: React.FC<MapViewProps> = ({
     map.on('click', (e) => {
       const lat = e.latlng.lat;
       const lng = e.latlng.lng;
-      const distFromRiver = Math.abs(lat - 28.003) + Math.abs(lng - 85.098);
-      const isNearFlood = distFromRiver < 0.006;
+      const distFromRiver = Math.abs(lat - center[0]) + Math.abs(lng - center[1]);
+      const isNearFlood = distFromRiver < 0.008;
 
       const mockExplain = {
         type: isNearFlood ? 'Flood Inundation Pixel' : 'Dry Hillside Terrain',
@@ -144,6 +145,12 @@ export const MapView: React.FC<MapViewProps> = ({
       mapRef.current = null;
     };
   }, []);
+
+  // Smooth flyTo when Disaster AOI or center changes
+  useEffect(() => {
+    if (!mapRef.current) return;
+    mapRef.current.flyTo(center, zoom, { duration: 1.2 });
+  }, [center[0], center[1], zoom]);
 
   // Handle Basemap Switch
   useEffect(() => {
@@ -325,7 +332,7 @@ export const MapView: React.FC<MapViewProps> = ({
     <div className="relative w-full h-full min-h-[500px] rounded-xl overflow-hidden border border-cyan-500/20 bg-slate-950">
       <div ref={mapContainerRef} className="w-full h-full" />
 
-      {/* Top-Left: Basemap Selector Pill (CARTO Authenticated) */}
+      {/* Top-Left: Basemap Selector Pill (Google Maps Platform & ESRI Recon) */}
       <div className="absolute top-4 left-4 z-[1000]">
         <div className="relative">
           <button

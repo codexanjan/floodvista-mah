@@ -308,6 +308,101 @@ export const DEFAULT_REPORT: BilingualReport = {
 १. **घ्यालचोक मार्ग (अतिसंवेदनशील)**: हेलिकॉप्टरने औषधे व अन्नपुरवठा करा.
 २. **थुलो दोभान पूल**: सैन्य अभियांत्रिकी पथक तैनात करा.`,
 
+  spanish_markdown: `# FLOODVISTA AI — INFORME RÁPIDO DE SITUACIÓN DE EMERGENCIA
+**ID de Documento:** \`FV-REP-TRISHULI-2026\`
+**Incidente:** Inundación Repentina y Flujo de Escombros en el Valle de Trishuli (2026-08-26)
+
+## 1. Resumen Ejecutivo de Impacto
+- **Área Evaluada (AOI):** 450.0 km²
+- **Inundación Modelada:** 14.8 hectáreas (Verificado con Radar SAR Sentinel-1)
+- **Estructuras Expuestas:** 18 edificios (Cruce con OpenStreetMap)
+- **Carreteras Potencialmente Cortadas:** 8.65 km
+- **Índice de Confianza (TrustScore):** 94.2%
+
+## 2. Poblaciones Aisladas y Rutas de Evacuación
+- **Ghyalchok Upper**: POTENCIALMENTE AISLADO (Vía principal de rescate interrumpida)
+- **Thulo Dovan**: PARCIALMENTE AFECTADO (Desvío habilitado por sendero montañoso, +3.4 km)
+
+## 3. Acciones Prioritarias de Intervención
+1. **Alcantarilla de Ghyalchok (CRÍTICO)**: 40 metros bloqueados por aluvión. Entrega aérea de víveres y suministros médicos.
+2. **Puente de Acero de Thulo Dovan (ALTO)**: Estribos socavados por corriente. Despliegue de ingenieros de rescate.`,
+
+  french_markdown: `# FLOODVISTA AI — RAPPORT DE SITUATION D'URGENCE RAPIDE
+**Identifiant:** \`FV-REP-TRISHULI-2026\`
+**Événement:** Crue Éclair et Coulées de Débris dans la Vallée de Trishuli (2026-08-26)
+
+## 1. Résumé Exécutif des Dommages
+- **Zone Évaluée:** 450.0 km²
+- **Étendue des Inondations:** 14.8 hectares (Mesure SAR Sentinel-1)
+- **Bâtiments Exposés:** 18 structures identifiées
+- **Réseau Routier Interrompu:** 8.65 km
+- **Indice de Confiance (TrustScore):** 94.2%
+
+## 2. Localités Isolées et Connectivité
+- **Ghyalchok Upper**: POTENTIELLEMENT COUPÉ (Voie vitale d'accès détruite)
+- **Thulo Dovan**: ACCÈS PERTURBÉ (Détour montagneux actif, +3.4 km)
+
+## 3. Actions Immédiates Recommandées
+1. **Passage de Ghyalchok (URGENT)**: Bloqué par 40 m de sédiments. Largage héliporté de secours d'urgence.
+2. **Pont de Thulo Dovan**: Piliers fragilisés par le courant. Envoi immédiat du génie civil.`,
+
+  arabic_markdown: `# تقرير حالة الطوارئ السريع — FLOODVISTA AI
+**معرف الوثيقة:** \`FV-REP-TRISHULI-2026\`
+**الحدث:** فيضان جبلي خاطف وانهيارات طينية في وادي تريشولي (2026-08-26)
+
+## ١. ملخص الأثر والأضرار
+- **المنطقة الخاضعة للتقييم:** 450.0 كم²
+- **مساحة الغمر المائي:** 14.8 هكتار (مؤكدة عبر رادار القمر الصناعي Sentinel-1)
+- **المباني المتضررة:** 18 منشأة مأهولة
+- **الطرق المعطلة أو المقطوعة:** 8.65 كم
+- **مؤشر موثوقية الأدلة (TrustScore):** 94.2%
+
+## ٢. القرى المعزولة ومسارات الإخلاء
+- **غيالتشوك العليا**: معزولة تماماً (انقطاع شريان الإمداد الوحيد)
+- **ثولو دوفان**: تعطل جزئي (تحويل المسار عبر الممر الجبلي، +3.4 كم إضافية)
+
+## ٣. أولويات التدخل العاجل
+١. **ممر غيالتشوك (حرج جداً)**: انسداد بطول 40 متراً بالطين. إسقاط جوي فوري للمساعدات الطبية.
+٢. **جسر ثولو دوفان الفولاذي (طوارئ)**: تآكل الدعامة النهرية. نشر فرق الهندسة العسكرية.`,
+
+  german_markdown: `# FLOODVISTA AI — SCHNELLER KATASTROPHEN-LAGEBERICHT
+**Dokument-ID:** \`FV-REP-TRISHULI-2026\`
+**Ereignis:** Sturzflut & Murenabgang im Trishuli-Tal (2026-08-26)
+
+## 1. Zusammenfassung der Schadenslage
+- **Untersuchungsgebiet (AOI):** 450.0 km²
+- **Überflutungsfläche:** 14.8 Hektar (Verifiziert durch Sentinel-1 SAR-Radar)
+- **Gefährdete Gebäude:** 18 Gebäude erfasst
+- **Unterbrochene Straßenverbindungen:** 8.65 km
+- **Zuverlässigkeitsindex (TrustScore):** 94.2%
+
+## 2. Isolierte Ortschaften
+- **Ghyalchok Upper**: POTENZIELL ABGESCHNITTEN (Hauptlebensader unterbrochen)
+- **Thulo Dovan**: VERKEHR BEHINDERT (Umleitung über Bergpfad, +3.4 km Umweg)
+
+## 3. Prioritäre Einsatzmaßnahmen
+1. **Zufahrt Ghyalchok (KRITISCH)**: 40m Schlammblockade. Luftabwurf von Notfallmedikamenten erforderlich.
+2. **Stahlbrücke Thulo Dovan (HOCH)**: Brückenpfeiler unterspült. Pioniereinheiten zur Sicherung entsenden.`,
+
+  japanese_markdown: `# FLOODVISTA AI — 緊急事態・迅速被害査定レポート
+**文書ID:** \`FV-REP-TRISHULI-2026\`
+**災害名:** トリシュリ渓谷 鉄砲水および土石流災害 (2026-08-26)
+
+## 1. 被害規模・エグゼクティブサマリー
+- **解析対象面積 (AOI):** 450.0 km²
+- **推定浸水面積:** 14.8 ヘクタール (Sentinel-1 SARレーダー衛星により直接観測)
+- **被災リスク建物:** 18 棟 (OpenStreetMap建物データ重畳)
+- **寸断された主要道路:** 8.65 km
+- **根拠信頼性スコア (TrustScore):** 94.2%
+
+## 2. 孤立集落と避難ルート状況
+- **ギャルチョク上部集落**: 孤立状態 (唯一のアクセス道路が流失)
+- **トゥロ・ドバン**: 一部通行止め (尾根迂回ルートにより接続中、+3.4 km遅延)
+
+## 3. 最優先緊急支援アクション
+1. **ギャルチョク進入路 (最重要・緊急)**: 40mにわたり土砂堆積。自衛隊/ドローンによる医薬品・食料投下。
+2. **トゥロ・ドバン鋼橋 (重要)**: 橋脚洗掘の危険。緊急補修工兵部隊の派遣。`,
+
   english_html: `<div style="font-family:sans-serif;line-height:1.6"><h2>FLOODVISTA AI — Rapid Incident Situation Report</h2><p><strong>Event:</strong> Trishuli Valley Flash Flood (2026-08-26)</p><hr/><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%"><tr><th>Metric</th><th>Value</th><th>Evidence</th></tr><tr><td>Assessed Area</td><td>450.0 km²</td><td>AOI Boundary</td></tr><tr><td>Flood Extent</td><td>14.8 ha</td><td>Spatially Inferred</td></tr><tr><td>Exposed Buildings</td><td>18 structures</td><td>Pre-event OSM</td></tr><tr><td>Disrupted Roads</td><td>8.65 km</td><td>Network Inferred</td></tr><tr><td>TrustScore</td><td>94.2%</td><td>Multi-sensor Index</td></tr></table><h3>Immediate Priority Actions</h3><ul><li><strong>Ghyalchok Access Culvert (CRITICAL)</strong>: Sole lifeline blocked by 40m debris. Air-drop medical supplies.</li><li><strong>Thulo Dovan Steel Bridge (HIGH)</strong>: Structural abutment exposed. Deploy structural engineers.</li></ul></div>`,
   nepali_html: `<div style="font-family:sans-serif;line-height:1.6"><h2>फ्लडभिस्टा एआई — द्रुत विपद् स्थिति प्रतिवेदन</h2><p><strong>घटना:</strong> त्रिशूली उपत्यका बाढी तथा पहिरो (२०२६-०८-२६)</p><hr/><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%"><tr><th>सूचक</th><th>तथ्याङ्क</th><th>प्रमाण</th></tr><tr><td>कुल क्षेत्रफल</td><td>४५०.० वर्ग कि.मी.</td><td>भौगोलिक सीमा</td></tr><tr><td>बाढी फैलावट</td><td>१४.८ हेक्टर</td><td>उपग्रह राडार</td></tr><tr><td>जोखिममा संरचना</td><td>१८ वटा</td><td>स्थानिक अनुमान</td></tr><tr><td>अवरुद्ध सडक</td><td>८.६५ कि.मी.</td><td>सञ्जाल विश्लेषण</td></tr><tr><td>विश्वसनीयता</td><td>९४.२%</td><td>प्रमाण सूचकाङ्क</td></tr></table></div>`
 };
@@ -361,3 +456,123 @@ export function computeScenario(disruptionM: number, prob: number, bufferM: numb
     sensitivity_summary: `Sensitivity Analysis: At ${disruptionM}m threshold, Ghyalchok Upper remains cut-off across all scenarios. Khar Hamlet connectivity depends heavily on whether the 30m Bhote Koshi bridge approach is passable.`
   };
 }
+
+export const DISASTER_AOI_LOCATIONS: import('./types').DisasterAOI[] = [
+  {
+    id: 'trishuli_nepal',
+    name: 'Trishuli Valley Gorge',
+    region: 'Bagmati Province',
+    country: 'Nepal',
+    flag: '🇳🇵',
+    center: [28.003, 85.097],
+    zoom: 14,
+    severity: 'CRITICAL',
+    inundationAreaHa: 14.8,
+    exposedBuildings: 18,
+    cutoffVillages: 2,
+    eventDate: 'August 2026',
+    sensor: 'Sentinel-1 SAR IW (VV/VH)',
+    description: 'Steep Himalayan mountain flash flood along Trishuli river corridor. Severe road severance and isolated mountain villages.'
+  },
+  {
+    id: 'brahmaputra_assam',
+    name: 'Brahmaputra Basin (Kaziranga-Guwahati)',
+    region: 'Assam',
+    country: 'India',
+    flag: '🇮🇳',
+    center: [26.185, 91.747],
+    zoom: 13,
+    severity: 'CRITICAL',
+    inundationAreaHa: 142.5,
+    exposedBuildings: 164,
+    cutoffVillages: 11,
+    eventDate: 'July 2026',
+    sensor: 'Sentinel-1 SAR C-Band + Copernicus DEM',
+    description: 'Massive monsoon riverine inundation across Brahmaputra floodplains. Extensive wetland breaching and embankment breaches.'
+  },
+  {
+    id: 'indus_pakistan',
+    name: 'Indus River Corridor (Sindh)',
+    region: 'Sindh Province',
+    country: 'Pakistan',
+    flag: '🇵🇰',
+    center: [27.558, 68.202],
+    zoom: 12,
+    severity: 'CRITICAL',
+    inundationAreaHa: 380.2,
+    exposedBuildings: 412,
+    cutoffVillages: 28,
+    eventDate: 'September 2026',
+    sensor: 'Sentinel-1 Multi-Temporal SAR',
+    description: 'Catastrophic basin-scale inundation following cloudbursts. Left bank outfall drain overflow and rural village cutoffs.'
+  },
+  {
+    id: 'valencia_spain',
+    name: 'Valencia Rambla del Poyo',
+    region: 'Comunidad Valenciana',
+    country: 'Spain',
+    flag: '🇪🇸',
+    center: [39.469, -0.376],
+    zoom: 14,
+    severity: 'HIGH',
+    inundationAreaHa: 68.4,
+    exposedBuildings: 95,
+    cutoffVillages: 4,
+    eventDate: 'October 2026',
+    sensor: 'Sentinel-1 + Sentinel-2 MSI Hybrid',
+    description: 'Devastating DANA flash flood in suburban ravines and bridges. Urban vehicular blockage and industrial park inundation.'
+  },
+  {
+    id: 'kerala_periyar',
+    name: 'Periyar River Basin (Aluva)',
+    region: 'Kerala',
+    country: 'India',
+    flag: '🇮🇳',
+    center: [10.023, 76.342],
+    zoom: 14,
+    severity: 'HIGH',
+    inundationAreaHa: 52.1,
+    exposedBuildings: 74,
+    cutoffVillages: 5,
+    eventDate: 'August 2026',
+    sensor: 'Sentinel-1 SAR IW Dual-Pol',
+    description: 'Reservoir gate opening combined with intense rainfall leading to coastal backwater flood crests.'
+  }
+];
+
+export const DEFAULT_CITIZEN_REPORTS: import('./types').CitizenSOSReport[] = [
+  {
+    id: 'SOS-0826-01',
+    timestamp: '10 mins ago',
+    location_name: 'Ghyalchok Upper Hamlet',
+    coordinates: [85.1029, 28.0032],
+    water_depth_m: 1.8,
+    trapped_people: 14,
+    critical_needs: ['Emergency Insulin', 'Infant Formula', 'Drinking Water'],
+    status: 'DISPATCHED',
+    reported_by: 'Bikash Tamang (Village elder via SAT phone)'
+  },
+  {
+    id: 'SOS-0826-02',
+    timestamp: '25 mins ago',
+    location_name: 'Bhote Koshi Bridge Approach',
+    coordinates: [85.0970, 28.0045],
+    water_depth_m: 2.4,
+    trapped_people: 6,
+    critical_needs: ['Rope Extraction', 'Stretcher'],
+    status: 'VERIFIED',
+    reported_by: 'Armed Police Force Scout Team'
+  },
+  {
+    id: 'SOS-0826-03',
+    timestamp: '42 mins ago',
+    location_name: 'Khar Mountain Ridge Trail',
+    coordinates: [85.1085, 28.0091],
+    water_depth_m: 0.9,
+    trapped_people: 22,
+    critical_needs: ['Shelter Tarpaulins', 'Dry Rations'],
+    status: 'PENDING',
+    reported_by: 'Red Cross Community Volunteer'
+  }
+];
+

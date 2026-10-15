@@ -134,4 +134,58 @@ export interface BilingualReport {
   telugu_html?: string;
   marathi_markdown?: string;
   marathi_html?: string;
+  spanish_markdown?: string;
+  spanish_html?: string;
+  french_markdown?: string;
+  french_html?: string;
+  arabic_markdown?: string;
+  arabic_html?: string;
+  german_markdown?: string;
+  german_html?: string;
+  japanese_markdown?: string;
+  japanese_html?: string;
 }
+
+export type SupportedLanguage = 
+  | 'en' // English
+  | 'hi' // Hindi
+  | 'ne' // Nepali
+  | 'bn' // Bengali
+  | 'ta' // Tamil
+  | 'te' // Telugu
+  | 'mr' // Marathi
+  | 'es' // Spanish
+  | 'fr' // French
+  | 'ar' // Arabic
+  | 'de' // German
+  | 'ja'; // Japanese
+
+export interface DisasterAOI {
+  id: string;
+  name: string;
+  region: string;
+  country: string;
+  flag: string;
+  center: [number, number];
+  zoom: number;
+  severity: 'CRITICAL' | 'HIGH' | 'MONITORING';
+  inundationAreaHa: number;
+  exposedBuildings: number;
+  cutoffVillages: number;
+  eventDate: string;
+  sensor: string;
+  description: string;
+}
+
+export interface CitizenSOSReport {
+  id: string;
+  timestamp: string;
+  location_name: string;
+  coordinates: [number, number];
+  water_depth_m: number;
+  trapped_people: number;
+  critical_needs: string[];
+  status: 'VERIFIED' | 'DISPATCHED' | 'PENDING';
+  reported_by: string;
+}
+
