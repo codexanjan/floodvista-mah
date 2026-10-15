@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/floodvista_logo.jpg" alt="FLOODVISTA AI Logo" width="480" style="border-radius: 16px; box-shadow: 0 8px 32px rgba(0, 242, 254, 0.25);" />
+<img src="docs/assets/floodvista_brand_header.svg" alt="FLOODVISTA AI Brand Banner" width="100%" style="border-radius: 16px; max-width: 800px; box-shadow: 0 8px 32px rgba(0, 242, 254, 0.25);" />
 
 # FLOODVISTA AI
 ### *See. Understand. Rescue Faster.*
@@ -8,7 +8,8 @@
 **Multimodal AI Hackathon 2026 — Track B: Mapping Flood Damage from Space**  
 *Satellite-Powered Flood Damage Assessment, Infrastructure Connectivity Analysis & Disaster Response Intelligence*
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20Production-success?style=for-the-badge&logo=vercel&logoColor=white)](https://frontend-teal-seven-45.vercel.app)
+[![Primary Live Demo](https://img.shields.io/badge/Primary%20App-floodvistaai.vercel.app-00f2fe?style=for-the-badge&logo=vercel&logoColor=white)](https://floodvistaai.vercel.app/)
+[![Direct Link](https://img.shields.io/badge/Direct%20Access-frontend--teal--seven--45.vercel.app-10b981?style=for-the-badge&logo=vercel&logoColor=white)](https://frontend-teal-seven-45.vercel.app)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-codexanjan%2Ffloodvista--mah-181717?style=for-the-badge&logo=github)](https://github.com/codexanjan/floodvista-mah)
 [![Deploy to Render](https://img.shields.io/badge/Deploy%20Backend-Render%201--Click-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://render.com/deploy?repo=https://github.com/codexanjan/floodvista-mah)
 [![Deploy on Railway](https://img.shields.io/badge/Deploy%20Backend-Railway-0B0D0E?style=for-the-badge&logo=railway)](https://railway.app/new)
@@ -17,7 +18,7 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.2+-ee4c2c?style=for-the-badge&logo=pytorch)](https://pytorch.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-1.0.0-009688?style=for-the-badge&logo=fastapi)](src/floodmap/api/)
 [![Frontend](https://img.shields.io/badge/React%2018-Vite%20%2B%20Tailwind-00f2fe?style=for-the-badge&logo=react)](frontend/)
-[![CARTO](https://img.shields.io/badge/Basemaps-CARTO%20Authenticated-3EB8D4?style=for-the-badge&logo=carto)](https://carto.com/)
+[![Basemaps](https://img.shields.io/badge/Basemaps-CARTO%20Open%20Dark-3EB8D4?style=for-the-badge&logo=carto)](https://carto.com/)
 [![License](https://img.shields.io/badge/data%20license-Copernicus%20Open%20Access-6366f1?style=for-the-badge)](docs/scientific-assumptions.md)
 
 ---
@@ -371,21 +372,47 @@ Shell & Docker       ██                                  2.6% (Dockerfile, R
 | **Earth Observation & GIS** | **Sentinel-1 SAR IW (VV/VH)**, **Sentinel-2 MSI Optical**, **Copernicus WorldDEM-30**, **Rasterio 1.4+**, **GeoPandas**, **Shapely** |
 | **Graph & Resilience Routing** | **NetworkX**, Pre-event OpenStreetMap (ohsome API), Dijkstra Shortest Path Engine |
 | **High-Performance API** | **FastAPI 1.0+**, **Uvicorn**, **Pydantic v2**, CORS Middleware, Streaming Static & ZIP FileResponses |
-| **Command Center UI** | **React 18**, **Vite**, **Tailwind CSS**, **Leaflet**, **CARTO Basemaps** (Authenticated Key: `cb1_4l...745`), **Recharts**, **Lucide Icons** |
+| **Command Center UI** | **React 18**, **Vite**, **Tailwind CSS**, **Leaflet**, **CARTO Basemaps Dark CDN**, **Recharts**, **Lucide Icons** |
 | **Deployment & Cloud** | **Vercel** (Edge Frontend), **Render** (1-Click Blueprint), **Railway** (Container), **Docker** |
+
+---
+
+## Interactive REST API Documentation
+
+FLOODVISTA AI exposes a fully documented, production-ready REST API built on FastAPI.
+
+| Method | Endpoint | Description | Response Type |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/` | API Healthcheck & System Telemetry | `JSON` |
+| `GET` | `/api/analyses/trishuli-demo` | Complete analysis bundle (floods, routes, TrustScore, bilingual SitRep) | `JSON` |
+| `POST` | `/api/segment` | Run deep learning flood segmentation on uploaded GeoTIFF | `GeoJSON FeatureCollection` |
+| `POST` | `/api/simulate` | Run real-time What-If sensitivity simulation | `JSON` |
+| `GET` | `/api/trust-score` | Multi-sensor TrustScore evidence breakdown | `JSON` |
+| `GET` | `/api/export/rescue-pack` | Download offline incident ZIP pack (GeoJSON + bilingual SitRep + offline HTML) | `application/zip` |
+| `GET` | `/api/evaluation` | Kuro Siwo model evaluation metrics & confusion matrix | `JSON` |
+| `GET` | `/docs` | Interactive Swagger UI sandbox | `HTML` |
+
+### Sample Analysis Request
+```bash
+# Fetch complete operational flood analysis
+curl -X GET "https://floodvista-ai-backend.onrender.com/api/analyses/trishuli-demo" \
+  -H "Accept: application/json"
+```
 
 ---
 
 ## Cloud Hosting & Live URLs
 
-- **Production Frontend (Vercel Edge):**  
+- **Primary Production Frontend:**  
+  [https://floodvistaai.vercel.app](https://floodvistaai.vercel.app)
+- **Direct Edge Deployment (No Login Required):**  
   [https://frontend-teal-seven-45.vercel.app](https://frontend-teal-seven-45.vercel.app)
-- **Direct Vercel Deployment:**  
-  [https://frontend-c3ktaipph-krotrex-2830s-projects.vercel.app](https://frontend-c3ktaipph-krotrex-2830s-projects.vercel.app)
 - **GitHub Source Repository:**  
   [https://github.com/codexanjan/floodvista-mah](https://github.com/codexanjan/floodvista-mah)
 - **1-Click Backend Deploy (Render):**  
   [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/codexanjan/floodvista-mah)
+- **1-Click Backend Deploy (Railway):**  
+  [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template?template=https://github.com/codexanjan/floodvista-mah)
 
 ---
 

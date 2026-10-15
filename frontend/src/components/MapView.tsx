@@ -2,27 +2,39 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { Layers, MapPin, AlertTriangle, ShieldCheck, Info, Compass, CheckCircle2 } from 'lucide-react';
 
-export const CARTO_API_KEY = 'cb1_4l2w_1_c04473e1984c633bf7453355';
+// Support optional CARTO API key from client environment or storage without hardcoding secrets
+export const getCartoApiKey = (): string => {
+  if (typeof window !== 'undefined') {
+    return window.localStorage.getItem('CARTO_API_KEY') || '';
+  }
+  return '';
+};
+
+export const getBasemapUrl = (subpath: string): string => {
+  const key = getCartoApiKey();
+  const base = `https://{s}.basemaps.cartocdn.com/rastertiles/${subpath}/{z}/{x}/{y}{r}.png`;
+  return key ? `${base}?api_key=${encodeURIComponent(key)}` : base;
+};
 
 export const BASEMAP_OPTIONS = [
   {
     id: 'carto_dark',
     label: 'CARTO Dark Matter (Night Ops)',
-    url: `https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?api_key=${CARTO_API_KEY}`,
+    url: getBasemapUrl('dark_all'),
     attribution: '&copy; CARTO &copy; OpenStreetMap',
     subdomains: 'abcd',
   },
   {
     id: 'carto_voyager',
     label: 'CARTO Voyager (Tactical Day)',
-    url: `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${CARTO_API_KEY}`,
+    url: getBasemapUrl('voyager'),
     attribution: '&copy; CARTO &copy; OpenStreetMap',
     subdomains: 'abcd',
   },
   {
     id: 'carto_positron',
     label: 'CARTO Positron (High-Contrast)',
-    url: `https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?api_key=${CARTO_API_KEY}`,
+    url: getBasemapUrl('light_all'),
     attribution: '&copy; CARTO &copy; OpenStreetMap',
     subdomains: 'abcd',
   },
@@ -326,7 +338,7 @@ export const MapView: React.FC<MapViewProps> = ({
           {showBasemapMenu && (
             <div className="absolute top-9 left-0 bg-slate-900/95 backdrop-blur-md border border-cyan-500/30 rounded-lg shadow-2xl p-1.5 w-64 space-y-1 text-xs">
               <div className="px-2 py-1 text-[10px] text-slate-400 font-mono uppercase border-b border-slate-800">
-                CARTO Base Layer (Key: cb1_4l...745)
+                CARTO Base Maps (Tactical Ops)
               </div>
               {BASEMAP_OPTIONS.map(opt => (
                 <button
