@@ -548,314 +548,242 @@ export function App() {
         )}
       </AnimatePresence>
 
-      {/* TOP APPLICATION MENU BAR */}
+      {/* VIEW 1: API DOCUMENTATION PAGE */}
+      {currentPage === 'docs' && (
+        <main className="flex-1 p-4 max-w-7xl w-full mx-auto space-y-4">
+          <ApiDocs />
+        </main>
+      )}
+
+      {/* VIEW 2: OPERATIONAL CONSOLE PAGES WITH LEFT-SIDEBAR NAVIGATION */}
       {currentPage === 'console' && (
-        <div className="bg-[#070b16] border-b border-cyan-500/20 px-4 py-1.5 flex items-center justify-between text-xs relative z-40 select-none">
-          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-            {/* File Menu */}
-            <div className="relative">
-              <button
-                onClick={() => setActiveMenuDropdown(activeMenuDropdown === 'file' ? null : 'file')}
-                className="px-2.5 py-1 rounded text-slate-300 hover:text-cyan-300 hover:bg-slate-800/80 flex items-center gap-1 transition-colors"
-              >
-                <span>File</span> <ChevronDown className="w-3 h-3 text-slate-400" />
-              </button>
-              {activeMenuDropdown === 'file' && (
-                <div className="absolute left-0 top-7 w-60 bg-slate-900 border border-cyan-500/30 rounded-lg shadow-2xl p-1.5 space-y-1 z-50">
-                  <button
-                    onClick={() => { handleDownloadRescuePack(); setActiveMenuDropdown(null); }}
-                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-200 flex items-center gap-2"
-                  >
-                    <Download className="w-3.5 h-3.5 text-cyan-400" /> Download Rescue Pack (.zip)
-                  </button>
-                  <button
-                    onClick={() => { copyReportMarkdown(); setActiveMenuDropdown(null); }}
-                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-200 flex items-center gap-2"
-                  >
-                    <Copy className="w-3.5 h-3.5 text-teal-400" /> Copy Incident SitRep (.md)
-                  </button>
-                  <button
-                    onClick={() => { window.print(); setActiveMenuDropdown(null); }}
-                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-200 flex items-center gap-2"
-                  >
-                    <Printer className="w-3.5 h-3.5 text-slate-400" /> Print Evacuation Brief (PDF)
-                  </button>
-                  <div className="border-t border-slate-800 my-1" />
-                  <button
-                    onClick={() => { setCurrentPage('landing'); setActiveMenuDropdown(null); }}
-                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-300 flex items-center gap-2"
-                  >
-                    <Home className="w-3.5 h-3.5 text-slate-400" /> Return to Home Landing
-                  </button>
-                </div>
-              )}
+        <div className="flex-1 flex flex-col md:flex-row min-h-0 relative overflow-hidden">
+          {/* LEFT SIDEBAR MENU BAR (Dedicated Mission Control Sidebar) */}
+          <aside className="w-full md:w-64 lg:w-72 bg-[#060a16] border-r border-cyan-500/20 flex flex-col shrink-0 md:h-[calc(100vh-65px)] md:sticky md:top-[65px] z-30 select-none overflow-y-auto scrollbar-thin">
+            {/* Sidebar Top: Mission Header */}
+            <div className="p-3.5 border-b border-slate-800/80 bg-slate-950/60 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                <span className="text-[11px] font-mono uppercase tracking-wider text-cyan-300 font-bold">Mission Portals</span>
+              </div>
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-500/30">
+                8 Workspaces
+              </span>
             </div>
 
-            {/* Portals Menu */}
-            <div className="relative">
-              <button
-                onClick={() => setActiveMenuDropdown(activeMenuDropdown === 'portals' ? null : 'portals')}
-                className="px-2.5 py-1 rounded text-cyan-300 hover:text-white hover:bg-slate-800/80 flex items-center gap-1 font-semibold transition-colors"
-              >
-                <span>Portals &amp; Modules</span> <ChevronDown className="w-3 h-3 text-cyan-400" />
-              </button>
-              {activeMenuDropdown === 'portals' && (
-                <div className="absolute left-0 top-7 w-72 bg-slate-900 border border-cyan-500/30 rounded-lg shadow-2xl p-1.5 space-y-1 z-50">
-                  <div className="px-2 py-1 text-[10px] text-slate-500 font-mono uppercase border-b border-slate-800">Operational Mission Modules</div>
-                  {[
-                    { id: 'command', label: 'Command Center & Tactical GIS', badge: 'Live Map' },
-                    { id: 'twin', label: '01. Flood Evidence Twin', badge: 'Explainable AI' },
-                    { id: 'resilience', label: '02. Rescue Route Resilience Lab', badge: 'Dijkstra' },
-                    { id: 'trustscore', label: '03. TrustScore Uncertainty Engine', badge: 'Multi-Sensor' },
-                    { id: 'simulator', label: '04. What-If Disaster Simulator', badge: 'Live Physics' },
-                    { id: 'reports', label: '05. Multilingual SitRep & Citizen SOS', badge: '12 Languages' },
-                    { id: 'hydrology', label: 'Downstream Flow Path Explorer', badge: 'D8 Topo' },
-                    { id: 'evaluation', label: 'Scientific Provenance & Metrics', badge: 'Kuro Siwo' },
-                  ].map(p => (
-                    <button
-                      key={p.id}
-                      onClick={() => { setActiveTab(p.id as any); setActiveMenuDropdown(null); }}
-                      className={`w-full text-left px-2.5 py-1.5 rounded flex items-center justify-between text-xs transition-colors ${
-                        activeTab === p.id ? 'bg-cyan-500/20 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'
-                      }`}
-                    >
-                      <span>{p.label}</span>
-                      <span className="text-[9px] px-1.5 rounded bg-slate-950 font-mono text-cyan-400">{p.badge}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Disaster AOIs Menu */}
-            <div className="relative">
-              <button
-                onClick={() => setActiveMenuDropdown(activeMenuDropdown === 'aois' ? null : 'aois')}
-                className="px-2.5 py-1 rounded text-slate-300 hover:text-cyan-300 hover:bg-slate-800/80 flex items-center gap-1 transition-colors"
-              >
-                <MapPin className="w-3 h-3 text-red-400" />
-                <span>Disaster Locations</span> <ChevronDown className="w-3 h-3 text-slate-400" />
-              </button>
-              {activeMenuDropdown === 'aois' && (
-                <div className="absolute left-0 top-7 w-72 bg-slate-900 border border-cyan-500/30 rounded-lg shadow-2xl p-1.5 space-y-1 z-50">
-                  <div className="px-2 py-1 text-[10px] text-slate-500 font-mono uppercase border-b border-slate-800">Global Flood Hotspots</div>
-                  {DISASTER_AOI_LOCATIONS.map(aoi => (
-                    <button
-                      key={aoi.id}
-                      onClick={() => { setCurrentAOI(aoi); setActiveMenuDropdown(null); }}
-                      className={`w-full text-left px-2.5 py-2 rounded flex items-center justify-between text-xs transition-colors ${
-                        currentAOI.id === aoi.id ? 'bg-cyan-500/20 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'
-                      }`}
-                    >
-                      <div>
-                        <div className="font-semibold flex items-center gap-1.5">
-                          <span>{aoi.flag}</span>
-                          <span>{aoi.name}</span>
-                        </div>
-                        <div className="text-[10px] text-slate-400">{aoi.country} &bull; {aoi.inundationAreaHa} ha</div>
-                      </div>
-                      {currentAOI.id === aoi.id && <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Languages Menu (12 Languages) */}
-            <div className="relative">
-              <button
-                onClick={() => setActiveMenuDropdown(activeMenuDropdown === 'lang' ? null : 'lang')}
-                className="px-2.5 py-1 rounded text-slate-300 hover:text-cyan-300 hover:bg-slate-800/80 flex items-center gap-1 transition-colors"
-              >
-                <Globe className="w-3 h-3 text-cyan-400" />
-                <span>12 Languages ({selectedLanguage.toUpperCase()})</span> <ChevronDown className="w-3 h-3 text-slate-400" />
-              </button>
-              {activeMenuDropdown === 'lang' && (
-                <div className="absolute left-0 top-7 w-64 bg-slate-900 border border-cyan-500/30 rounded-lg shadow-2xl p-1.5 grid grid-cols-2 gap-1 z-50">
-                  {[
-                    { id: 'en', label: 'English', flag: '🇬🇧' },
-                    { id: 'hi', label: 'हिन्दी', flag: '🇮🇳' },
-                    { id: 'ne', label: 'नेपाली', flag: '🇳🇵' },
-                    { id: 'bn', label: 'বাংলা', flag: '🇧🇩' },
-                    { id: 'ta', label: 'தமிழ்', flag: '🇮🇳' },
-                    { id: 'te', label: 'తెలుగు', flag: '🇮🇳' },
-                    { id: 'mr', label: 'मराठी', flag: '🇮🇳' },
-                    { id: 'es', label: 'Español', flag: '🇪🇸' },
-                    { id: 'fr', label: 'Français', flag: '🇫🇷' },
-                    { id: 'ar', label: 'العربية', flag: '🇸🇦' },
-                    { id: 'de', label: 'Deutsch', flag: '🇩🇪' },
-                    { id: 'ja', label: '日本語', flag: '🇯🇵' },
-                  ].map(l => (
-                    <button
-                      key={l.id}
-                      onClick={() => { setSelectedLanguage(l.id as any); setActiveMenuDropdown(null); }}
-                      className={`p-1.5 rounded text-left flex items-center gap-1.5 text-xs ${
-                        selectedLanguage === l.id ? 'bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/40' : 'text-slate-300 hover:bg-slate-800'
-                      }`}
-                    >
-                      <span>{l.flag}</span>
-                      <span className="truncate">{l.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Tools Menu */}
-            <div className="relative">
-              <button
-                onClick={() => setActiveMenuDropdown(activeMenuDropdown === 'tools' ? null : 'tools')}
-                className="px-2.5 py-1 rounded text-slate-300 hover:text-cyan-300 hover:bg-slate-800/80 flex items-center gap-1 transition-colors"
-              >
-                <span>Tools</span> <ChevronDown className="w-3 h-3 text-slate-400" />
-              </button>
-              {activeMenuDropdown === 'tools' && (
-                <div className="absolute left-0 top-7 w-64 bg-slate-900 border border-cyan-500/30 rounded-lg shadow-2xl p-1.5 space-y-1 z-50">
+            {/* Section 1: The 8 Portals (Direct click, zero dropdowns, zero overlapping!) */}
+            <div className="p-2 space-y-1">
+              {[
+                { id: 'command', num: '00', label: 'Command Center & GIS', badge: 'Live Map', icon: Activity },
+                { id: 'twin', num: '01', label: 'Flood Evidence Twin', badge: 'SAR AI', icon: Layers },
+                { id: 'resilience', num: '02', label: 'Rescue Route Resilience', badge: 'Dijkstra', icon: Route },
+                { id: 'trustscore', num: '03', label: 'TrustScore Uncertainty', badge: 'Audit', icon: ShieldCheck },
+                { id: 'simulator', num: '04', label: 'What-If Disaster Sim', badge: 'Physics', icon: Sliders },
+                { id: 'reports', num: '05', label: 'Multilingual SitRep & SOS', badge: '12 Lang', icon: FileText },
+                { id: 'hydrology', num: '06', label: 'Downstream Flow Path', badge: 'D8 Topo', icon: Waves },
+                { id: 'evaluation', num: '07', label: 'Scientific Metrics & AI', badge: 'Kuro Siwo', icon: Binary },
+              ].map(p => {
+                const Icon = p.icon;
+                const isActive = activeTab === p.id;
+                return (
                   <button
-                    onClick={() => { setBridgeOverrideSevered(!bridgeOverrideSevered); setActiveMenuDropdown(null); }}
-                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-200 flex items-center justify-between text-xs"
+                    key={p.id}
+                    onClick={() => setActiveTab(p.id as any)}
+                    className={`w-full text-left px-3 py-2 rounded-xl flex items-center justify-between text-xs transition-all group ${
+                      isActive
+                        ? 'bg-gradient-to-r from-cyan-500/25 to-teal-500/15 border border-cyan-500/50 text-cyan-300 font-bold shadow-cyan-glow'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-900/80 border border-transparent'
+                    }`}
                   >
-                    <span>Sever Bridge B-104 Override</span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${bridgeOverrideSevered ? 'bg-red-950 text-red-300' : 'bg-slate-800 text-slate-400'}`}>
-                      {bridgeOverrideSevered ? 'SEVERED' : 'INTACT'}
+                    <div className="flex items-center gap-2.5 truncate">
+                      <Icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-cyan-400' : 'text-slate-400 group-hover:text-cyan-300'}`} />
+                      <span className="truncate">{p.label}</span>
+                    </div>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono shrink-0 ${
+                      isActive ? 'bg-cyan-950 text-cyan-300 border border-cyan-500/40' : 'bg-slate-950/80 text-slate-500'
+                    }`}>
+                      {p.badge}
                     </span>
                   </button>
-                  <button
-                    onClick={() => { setIsReportingSOS(true); setActiveMenuDropdown(null); }}
-                    className="w-full text-left px-2.5 py-1.5 rounded hover:bg-slate-800 text-slate-200 flex items-center gap-2 text-xs"
-                  >
-                    <PlusCircle className="w-3.5 h-3.5 text-cyan-400" /> Log Citizen Ground SOS
-                  </button>
-                </div>
-              )}
+                );
+              })}
             </div>
-          </div>
 
-          {/* Right Status Indicator */}
-          <div className="flex items-center gap-3 text-[11px] font-mono text-slate-400">
-            <span className="hidden sm:inline text-cyan-300 font-semibold">{currentAOI.flag} {currentAOI.name}</span>
-            <span className="text-slate-600 hidden sm:inline">|</span>
-            <span className="text-emerald-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Multi-Sensor Active
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* DEDICATED SINGLE-TAB WORKSPACE HEADER (Replacing crowded 8 tabs) */}
-      {currentPage === 'console' && (
-        <div className="bg-slate-950 border-b border-cyan-500/20 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-md">
-          {/* Left: Active Portal Selector Dropdown */}
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <button
-                onClick={() => setActiveMenuDropdown(activeMenuDropdown === 'activeTab' ? null : 'activeTab')}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-950 to-slate-900 border border-cyan-500/40 text-cyan-300 hover:text-white font-bold text-xs sm:text-sm shadow-cyan-glow transition-all"
-              >
-                <Activity className="w-4 h-4 text-cyan-400" />
-                <span>
-                  {activeTab === 'command' && 'Command Center & Tactical GIS'}
-                  {activeTab === 'twin' && '01. Flood Evidence Twin (SAR Radar Lab)'}
-                  {activeTab === 'resilience' && '02. Rescue Route Resilience Lab (Dijkstra)'}
-                  {activeTab === 'trustscore' && '03. TrustScore Uncertainty Engine'}
-                  {activeTab === 'simulator' && '04. What-If Disaster Simulator'}
-                  {activeTab === 'reports' && '05. Multilingual SitRep & Citizen SOS'}
-                  {activeTab === 'hydrology' && '06. Downstream Flow Path Explorer'}
-                  {activeTab === 'evaluation' && '07. Scientific Provenance & Metrics'}
+            {/* Section 2: Disaster AOI Locations */}
+            <div className="px-3 pt-3 pb-1 border-t border-slate-800/80">
+              <div className="flex items-center justify-between mb-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="w-3 h-3 text-red-400" /> Disaster Locations (AOI)
                 </span>
-                <ChevronDown className="w-3.5 h-3.5 text-cyan-400 ml-1" />
-              </button>
-
-              {activeMenuDropdown === 'activeTab' && (
-                <div className="absolute left-0 top-10 w-72 bg-slate-900/98 backdrop-blur-xl border border-cyan-500/40 rounded-xl shadow-2xl p-1.5 space-y-1 z-50 text-xs">
-                  <div className="px-2 py-1 text-[10px] text-slate-500 font-mono uppercase border-b border-slate-800">
-                    Switch Mission Portal
-                  </div>
-                  {[
-                    { id: 'command', label: 'Command Center & Triage Map', badge: 'Live GIS' },
-                    { id: 'twin', label: '01. Flood Evidence Twin', badge: 'Explainable AI' },
-                    { id: 'resilience', label: '02. Rescue Route Resilience Lab', badge: 'Dijkstra' },
-                    { id: 'trustscore', label: '03. TrustScore Engine', badge: 'Uncertainty' },
-                    { id: 'simulator', label: '04. What-If Simulator', badge: 'Live Controls' },
-                    { id: 'reports', label: '05. Multilingual SitRep & SOS', badge: '12 Languages' },
-                    { id: 'hydrology', label: 'Downstream Flow Path Explorer', badge: 'D8 Topo' },
-                    { id: 'evaluation', label: 'Scientific Provenance & Metrics', badge: 'Kuro Siwo' },
-                  ].map(tab => (
+                <span className="text-[9px] text-slate-500 font-bold">Selected</span>
+              </div>
+              <div className="space-y-1">
+                {DISASTER_AOI_LOCATIONS.map(aoi => {
+                  const isCurrent = currentAOI.id === aoi.id;
+                  return (
                     <button
-                      key={tab.id}
-                      onClick={() => { setActiveTab(tab.id as any); setActiveMenuDropdown(null); }}
-                      className={`w-full text-left px-2.5 py-2 rounded-lg flex items-center justify-between transition-colors ${
-                        activeTab === tab.id
-                          ? 'bg-gradient-to-r from-cyan-500/20 to-teal-500/20 text-cyan-300 font-bold border border-cyan-500/40'
-                          : 'text-slate-300 hover:bg-slate-800'
+                      key={aoi.id}
+                      onClick={() => setCurrentAOI(aoi)}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between text-xs transition-all ${
+                        isCurrent
+                          ? 'bg-slate-900 border border-red-500/40 text-slate-100 font-semibold'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/50 border border-transparent'
                       }`}
                     >
-                      <span>{tab.label}</span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-950 font-mono text-cyan-400">{tab.badge}</span>
+                      <div className="truncate flex items-center gap-2">
+                        <span>{aoi.flag}</span>
+                        <span className="truncate">{aoi.name}</span>
+                      </div>
+                      {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse shrink-0" />}
                     </button>
-                  ))}
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Section 3: 12 Languages */}
+            <div className="px-3 pt-3 pb-1 border-t border-slate-800/80">
+              <div className="flex items-center justify-between mb-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                <span className="flex items-center gap-1.5">
+                  <Globe className="w-3 h-3 text-cyan-400" /> 12 Languages
+                </span>
+                <span className="text-cyan-400 font-bold">{selectedLanguage.toUpperCase()}</span>
+              </div>
+              <div className="grid grid-cols-4 gap-1">
+                {[
+                  { id: 'en', label: 'EN', flag: '🇬🇧' },
+                  { id: 'hi', label: 'HI', flag: '🇮🇳' },
+                  { id: 'ne', label: 'NE', flag: '🇳🇵' },
+                  { id: 'bn', label: 'BN', flag: '🇧🇩' },
+                  { id: 'ta', label: 'TA', flag: '🇮🇳' },
+                  { id: 'te', label: 'TE', flag: '🇮🇳' },
+                  { id: 'mr', label: 'MR', flag: '🇮🇳' },
+                  { id: 'es', label: 'ES', flag: '🇪🇸' },
+                  { id: 'fr', label: 'FR', flag: '🇫🇷' },
+                  { id: 'ar', label: 'AR', flag: '🇸🇦' },
+                  { id: 'de', label: 'DE', flag: '🇩🇪' },
+                  { id: 'ja', label: 'JA', flag: '🇯🇵' },
+                ].map(l => (
+                  <button
+                    key={l.id}
+                    onClick={() => setSelectedLanguage(l.id as any)}
+                    className={`py-1 px-1 rounded text-center text-[10px] font-mono transition-all ${
+                      selectedLanguage === l.id
+                        ? 'bg-cyan-500 text-slate-950 font-bold shadow-cyan-glow'
+                        : 'bg-slate-900/60 text-slate-400 hover:text-white hover:bg-slate-800'
+                    }`}
+                    title={l.label}
+                  >
+                    <span>{l.flag} {l.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Section 4: Tactical Tools */}
+            <div className="p-3 border-t border-slate-800/80 space-y-1.5">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1">
+                Tactical Actions
+              </div>
+              <button
+                onClick={() => handleDownloadRescuePack()}
+                disabled={isZipping}
+                className="w-full text-left px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500/20 to-teal-500/20 hover:from-cyan-500/30 hover:to-teal-500/30 border border-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center justify-between"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Download className="w-3.5 h-3.5 text-cyan-400" /> Download Rescue Pack
+                </span>
+                <span className="text-[9px] font-mono text-cyan-400">ZIP</span>
+              </button>
+              <button
+                onClick={() => setBridgeOverrideSevered(!bridgeOverrideSevered)}
+                className="w-full text-left px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-300 flex items-center justify-between"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Route className="w-3.5 h-3.5 text-amber-400" /> Bridge B-104 Test
+                </span>
+                <span className={`text-[9px] font-mono px-1 py-0.5 rounded ${bridgeOverrideSevered ? 'bg-red-950 text-red-300' : 'bg-slate-800 text-slate-400'}`}>
+                  {bridgeOverrideSevered ? 'SEVERED' : 'INTACT'}
+                </span>
+              </button>
+              <button
+                onClick={() => setIsReportingSOS(true)}
+                className="w-full text-left px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-300 flex items-center gap-1.5"
+              >
+                <PlusCircle className="w-3.5 h-3.5 text-red-400" />
+                <span>Log Citizen SOS Incident</span>
+              </button>
+            </div>
+          </aside>
+
+          {/* RIGHT MAIN WORKSPACE */}
+          <div className="flex-1 flex flex-col min-w-0 bg-[#040711] overflow-y-auto">
+            {/* Top Clean Breadcrumb Header (NO OVERLAPPING DROPDOWNS!) */}
+            <div className="bg-[#070b16]/95 border-b border-cyan-500/20 px-4 md:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-20 backdrop-blur-md">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono text-slate-500">PORTAL /</span>
+                <h1 className="text-sm font-bold text-white flex items-center gap-2">
+                  <span className="text-cyan-400">
+                    {activeTab === 'command' && '00. Command Center & Tactical GIS'}
+                    {activeTab === 'twin' && '01. Flood Evidence Twin (SAR Radar Lab)'}
+                    {activeTab === 'resilience' && '02. Rescue Route Resilience Lab (Dijkstra)'}
+                    {activeTab === 'trustscore' && '03. TrustScore Uncertainty Engine'}
+                    {activeTab === 'simulator' && '04. What-If Disaster Simulator'}
+                    {activeTab === 'reports' && '05. Multilingual SitRep & Ground Citizen SOS'}
+                    {activeTab === 'hydrology' && '06. Downstream Flow Path Explorer'}
+                    {activeTab === 'evaluation' && '07. Scientific Provenance & Metrics'}
+                  </span>
+                </h1>
+              </div>
+
+              {/* Prev / Next Quick Nav + AOI Status */}
+              <div className="flex items-center gap-2 sm:gap-3 text-xs">
+                <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg p-0.5">
+                  <button
+                    onClick={() => {
+                      const tabs = ['command', 'twin', 'resilience', 'trustscore', 'simulator', 'reports', 'hydrology', 'evaluation'];
+                      const idx = tabs.indexOf(activeTab);
+                      const prev = idx > 0 ? tabs[idx - 1] : tabs[tabs.length - 1];
+                      setActiveTab(prev as any);
+                    }}
+                    className="px-2 py-1 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-colors flex items-center gap-1 font-semibold"
+                    title="Previous Workspace"
+                  >
+                    &larr; Prev
+                  </button>
+                  <span className="text-[10px] text-slate-500 px-1.5 font-mono">
+                    {['command', 'twin', 'resilience', 'trustscore', 'simulator', 'reports', 'hydrology', 'evaluation'].indexOf(activeTab) + 1} / 8
+                  </span>
+                  <button
+                    onClick={() => {
+                      const tabs = ['command', 'twin', 'resilience', 'trustscore', 'simulator', 'reports', 'hydrology', 'evaluation'];
+                      const idx = tabs.indexOf(activeTab);
+                      const next = idx < tabs.length - 1 ? tabs[idx + 1] : tabs[0];
+                      setActiveTab(next as any);
+                    }}
+                    className="px-2 py-1 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-colors flex items-center gap-1 font-semibold"
+                    title="Next Workspace"
+                  >
+                    Next &rarr;
+                  </button>
                 </div>
-              )}
+
+                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300">
+                  <MapPin className="w-3.5 h-3.5 text-red-400" />
+                  <span className="font-semibold text-white">{currentAOI.flag} {currentAOI.name}</span>
+                </div>
+
+                <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  MULTI-SENSOR ACTIVE
+                </div>
+              </div>
             </div>
 
-            <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-500/30 text-[10px] font-mono uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-              Single Focus Workspace
-            </span>
-          </div>
-
-          {/* Center: Fast Prev / Next Navigation */}
-          <div className="flex items-center gap-1.5 text-xs bg-slate-900 border border-slate-800 rounded-lg p-1">
-            <button
-              onClick={() => {
-                const tabs = ['command', 'twin', 'resilience', 'trustscore', 'simulator', 'reports', 'hydrology', 'evaluation'];
-                const idx = tabs.indexOf(activeTab);
-                const prev = idx > 0 ? tabs[idx - 1] : tabs[tabs.length - 1];
-                setActiveTab(prev as any);
-              }}
-              className="px-2.5 py-1 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-colors flex items-center gap-1 font-semibold"
-              title="Previous Portal"
-            >
-              &larr; Prev
-            </button>
-            <span className="text-[11px] text-slate-500 px-2 font-mono">
-              {['command', 'twin', 'resilience', 'trustscore', 'simulator', 'reports', 'hydrology', 'evaluation'].indexOf(activeTab) + 1} / 8
-            </span>
-            <button
-              onClick={() => {
-                const tabs = ['command', 'twin', 'resilience', 'trustscore', 'simulator', 'reports', 'hydrology', 'evaluation'];
-                const idx = tabs.indexOf(activeTab);
-                const next = idx < tabs.length - 1 ? tabs[idx + 1] : tabs[0];
-                setActiveTab(next as any);
-              }}
-              className="px-2.5 py-1 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-colors flex items-center gap-1 font-semibold"
-              title="Next Portal"
-            >
-              Next &rarr;
-            </button>
-          </div>
-
-          {/* Right: Quick Active AOI Badge */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300">
-              <MapPin className="w-3.5 h-3.5 text-red-400" />
-              <span className="font-semibold text-white">{currentAOI.flag} {currentAOI.name}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Content Area */}
-      <main className="flex-1 p-4 max-w-7xl w-full mx-auto space-y-4">
-        {/* VIEW 1: API DOCUMENTATION PAGE */}
-        {currentPage === 'docs' && <ApiDocs />}
-
-        {/* VIEW 2: OPERATIONAL CONSOLE PAGES */}
-        {currentPage === 'console' && (
-          <>
-            {/* TAB: COMMAND CENTER */}
-            {activeTab === 'command' && (
+            {/* Main Content Workspace Body */}
+            <main className="flex-1 p-3 md:p-5 w-full space-y-4">
+              {/* TAB: COMMAND CENTER */}
+              {activeTab === 'command' && (
               <div className="space-y-4 animate-fade-in">
                 {/* KPI Cards Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -1712,9 +1640,10 @@ export function App() {
                 </div>
               </div>
             )}
-          </>
-        )}
-      </main>
+            </main>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="border-t border-slate-800/80 bg-[#070b14] py-3 px-4 text-center text-xs text-slate-500 flex flex-col md:flex-row items-center justify-between gap-2">
